@@ -59,7 +59,13 @@ Windows ne fournit pas ces deux informations directement :
 
 Au premier lancement, une fenêtre d'accueil explique tout et propose de l'activer. Rien n'est installé ni activé sans votre accord. Si vous acceptez, Lux Monitor crée une **tâche planifiée** (« Lux Monitor » dans le Planificateur de tâches) qui le lance en administrateur à chaque ouverture de session, sans écran de confirmation. Vous pouvez revenir sur ce choix à tout moment : menu de l'icône → **Température et FPS…**
 
-> Un pilote a un accès très profond au système. N'installez PawnIO que si vous faites confiance à sa source. Sans lui, tout le reste de Lux Monitor fonctionne normalement.
+> **À propos de PawnIO**
+>
+> PawnIO est un projet **indépendant**, développé et maintenu par ses propres auteurs. Lux Monitor n'est ni affilié à PawnIO ni approuvé par ses auteurs, ne le distribue pas et ne l'installe pas : la fenêtre d'accueil ouvre seulement son site officiel, et c'est vous qui décidez de l'installer.
+>
+> Un pilote a un accès très profond au système. N'installez PawnIO que si vous faites confiance à sa source, et téléchargez-le uniquement depuis son [site officiel](https://pawnio.eu). Son installation, son fonctionnement et ses éventuels problèmes relèvent de PawnIO et de ses auteurs, pas de Lux Monitor. Pour toute question à son sujet, adressez-vous à [son projet](https://github.com/namazso/PawnIO).
+>
+> Sans PawnIO, tout le reste de Lux Monitor fonctionne normalement : seule la température du processeur est absente.
 
 **Comment les FPS sont mesurés** : à chaque image affichée, DirectX signale un événement dans ETW (*Event Tracing for Windows*), le système de traçage intégré à Windows. Lux Monitor compte ces événements, comme l'outil PresentMon de Microsoft et Intel. **Rien n'est injecté dans les jeux** : aucun risque avec les anti-triche.
 
@@ -115,6 +121,10 @@ Principe clé : **l'interface ne lit jamais le matériel elle-même**. Les capte
 - [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) (MPL-2.0) : lecture des capteurs GPU et de la température CPU
 - [PawnIO](https://github.com/namazso/PawnIO) (licence GPL, avec une exception pour les programmes qui l’utilisent) : pilote d'accès au matériel, installé séparément par l'utilisateur
 - [Microsoft.Diagnostics.Tracing.TraceEvent](https://github.com/microsoft/perfview) (MIT) : écoute des événements ETW pour les FPS
+
+## Absence de garantie
+
+Lux Monitor est fourni **« tel quel », sans aucune garantie**, comme le prévoient les articles 15 et 16 de la licence GPL v3.0. L'auteur ne peut être tenu responsable des dommages liés à son utilisation, ni à celle des logiciels tiers mentionnés ici (PawnIO, pilotes et outils des fabricants).
 
 ## Licence
 
