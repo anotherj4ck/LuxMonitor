@@ -1,0 +1,82 @@
+<!--
+    Mode jeu : juste les informations, sans fenêtre, toujours au premier plan.
+    Les clics traversent cette fenêtre (voir OverlayWindow.xaml.cs) : elle ne gêne jamais le jeu.
+    Couleurs fixes (blanc sur voile sombre) : elle doit rester lisible sur n'importe quelle image de jeu,
+    quel que soit le thème choisi pour le widget.
+-->
+<Window x:Class="LuxMonitor.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:LuxMonitor.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
+        Title="Lux Monitor - Mode jeu"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Topmost="True" ShowInTaskbar="False" ShowActivated="False" Focusable="False"
+        ResizeMode="NoResize" SizeToContent="WidthAndHeight"
+        Foreground="White" FontWeight="SemiBold"
+        FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="13"
+        MouseLeftButtonDown="Overlay_MouseLeftButtonDown" KeyDown="Overlay_KeyDown">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="OverlayLabelBrush" Color="#B3FFFFFF"/>
+
+    </Window.Resources>
+
+    <!-- Couleur et graisse du texte sont définies sur la fenêtre (Foreground, FontWeight) :
+         elles se transmettent à tous les textes, y compris ceux des modèles (DataTemplate).
+         Un style implicite de TextBlock, lui, ne traverse pas les modèles : c'est ce qui
+         affichait le GPU en noir dans la première version. -->
+    <Grid>
+    <!-- Voile sombre discret : garantit la lisibilité même sur une scène très claire -->
+    <Border Background="#73000000" CornerRadius="10" Padding="12,6">
+        <StackPanel Orientation="Horizontal">
+
+            <TextBlock>
+                <Run Text="CPU" Foreground="{StaticResource OverlayLabelBrush}"/>
+                <Run Text="{Binding CpuText, Mode=OneWay}"/>
+                <Run Text="{Binding CpuTemperatureText, Mode=OneWay}"/>
+            </TextBlock>
+
+            <ItemsControl ItemsSource="{Binding Gpus}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:GpuViewModel}">
+                        <TextBlock Margin="18,0,0,0">
+                            <Run Text="GPU" Foreground="{StaticResource OverlayLabelBrush}"/>
+                            <Run Text="{Binding LoadText, Mode=OneWay}"/>
+                            <Run Text="{Binding TemperatureText, Mode=OneWay}"/>
+                            <Run Text="{Binding VramText, Mode=OneWay}" Foreground="{StaticResource OverlayLabelBrush}"/>
+                        </TextBlock>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Margin="18,0,0,0">
+                <Run Text="RAM" Foreground="{StaticResource OverlayLabelBrush}"/>
+                <Run Text="{Binding RamText, Mode=OneWay}"/>
+            </TextBlock>
+
+            <!-- Bouton de retour au widget, pour ceux qui n'utilisent pas le raccourci.
+                 Seule cette zone devient cliquable quand la souris la survole (voir le code). -->
+            <Border x:Name="ExitButton" Margin="14,0,0,0" Padding="6,2" CornerRadius="6"
+                    Background="Transparent" Opacity="0.6" VerticalAlignment="Center"
+                    ToolTip="Revenir au widget (Ctrl+Maj+L)"
+                    MouseLeftButtonUp="ExitButton_MouseLeftButtonUp">
+                <TextBlock Text="&#xE73F;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                           FontWeight="Normal" FontSize="12"/>
+            </Border>
+        </StackPanel>
+    </Border>
+
+    <!-- Cadre visible uniquement pendant le déplacement -->
+    <Rectangle x:Name="MoveFrame" Visibility="Collapsed" RadiusX="10" RadiusY="10"
+               Stroke="White" StrokeThickness="1.5" StrokeDashArray="4 3"/>
+    </Grid>
+</Window>

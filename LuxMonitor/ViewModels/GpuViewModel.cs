@@ -13,6 +13,7 @@ public sealed class GpuViewModel : ObservableObject
     private double _loadPercent;
     private string _detail = string.Empty;
     private string _temperatureText = string.Empty;
+    private string _vramText = string.Empty;
 
     public GpuViewModel(string id, GpuVendor vendor)
     {
@@ -56,13 +57,23 @@ public sealed class GpuViewModel : ObservableObject
         private set => SetProperty(ref _temperatureText, value);
     }
 
+    /// <summary>Mémoire vidéo pour le mode jeu ("VRAM 1,2/8 Go"), vide si inconnue.</summary>
+    public string VramText
+    {
+        get => _vramText;
+        private set => SetProperty(ref _vramText, value);
+    }
+
     public void Update(GpuSnapshot snapshot)
     {
         Name = ShortenName(snapshot.Name);
         LoadPercent = snapshot.LoadPercent ?? 0;
         LoadText = snapshot.LoadPercent is double load ? $"{load:0} %" : "—";
 
-        TemperatureText = snapshot.TemperatureC is double t ? $"{t:0} °C  " : string.Empty;
+        TemperatureText = snapshot.TemperatureC is double t ? $"{t:0} °C" : string.Empty;
+        VramText = snapshot.MemoryUsedGb is double vramUsed && snapshot.MemoryTotalGb is double vramTotal && vramTotal > 0
+            ? string.Format(French, "VRAM {0:0.0}/{1:0} Go", vramUsed, vramTotal)
+            : string.Empty;
 
         // On n'affiche que ce qui est connu : pas de "0 °C" inventé.
         var parts = new List<string>();

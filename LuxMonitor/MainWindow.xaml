@@ -51,6 +51,8 @@
 
             <!-- Icônes : police Segoe Fluent Icons, intégrée à Windows 11 -->
             <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Style="{StaticResource IconButton}" Click="OverlayButton_Click" ToolTip="Mode jeu (Ctrl+Maj+L)"
+                        FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Content="&#xE7FC;" Margin="0,0,6,0"/>
                 <Button Style="{StaticResource IconButton}" Click="ThemeButton_Click" ToolTip="Changer de thème"
                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Content="&#xE790;" Margin="0,0,6,0"/>
                 <Button Style="{StaticResource IconButton}" Click="Close_Click" ToolTip="Masquer (Lux Monitor reste dans la zone de notification)"

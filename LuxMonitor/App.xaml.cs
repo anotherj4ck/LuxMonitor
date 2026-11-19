@@ -40,6 +40,12 @@ public partial class App : Application
         }
 
         var mainWindow = new MainWindow();
+
+        // L'application s'arrête quand la fenêtre principale se ferme,
+        // même si la fenêtre du mode jeu existe encore (cachée).
+        MainWindow = mainWindow;
+        ShutdownMode = ShutdownMode.OnMainWindowClose;
+
         mainWindow.Show();
 
         ListenForShowRequests(mainWindow);

@@ -25,6 +25,11 @@ public partial class MainWindow : Window
     private readonly AppSettings _settings = SettingsService.Load();
     private readonly TrayIconService _tray;
 
+    // Mode jeu : créé à la première utilisation.
+    private OverlayWindow? _overlay;
+    private HotkeyService? _hotkey;
+    private bool _widgetWasVisibleBeforeOverlay;
+
     // Vrai seulement quand on quitte pour de bon (menu "Quitter").
     // Sinon, fermer la fenêtre la cache simplement dans la zone de notification.
     private bool _isExiting;
@@ -50,7 +55,7 @@ public partial class MainWindow : Window
         _timer.Tick += (_, _) => _viewModel.Refresh();
         IsVisibleChanged += (_, _) => UpdateRefreshState();
 
-        _tray = new TrayIconService(ToggleWidget, ExitApplication);
+        _tray = new TrayIconService(ToggleWidget, ToggleOverlay, MoveOverlay, SetOverlayCorner, _settings.OverlayCorner, ExitApplication);
         StartupService.RefreshPathIfEnabled();
 
         Closing += OnClosing;
@@ -68,14 +73,16 @@ public partial class MainWindow : Window
         Activate();
     }
 
-    private void HideWidget()
+    private void HideWidget() => HideWidget(showHint: true);
+
+    private void HideWidget(bool showHint)
     {
         _viewModel.IsThemePanelOpen = false;
         Hide();
         SavePosition();
 
         // La première fois seulement, on explique où est passée la fenêtre.
-        if (!_settings.HasShownTrayHint)
+        if (showHint && !_settings.HasShownTrayHint)
         {
             _tray.ShowHint("Lux Monitor continue de tourner",
                 "Il est dans la zone de notification. Clic gauche pour le rouvrir, clic droit pour le menu.");
@@ -98,9 +105,94 @@ public partial class MainWindow : Window
         Close();
     }
 
+    // ---- Mode jeu ----
+
+    /// <summary>
+    /// Bascule entre le widget et le mode jeu. En sortant du mode jeu, on retrouve
+    /// le widget seulement s'il était affiché avant (sinon on reste discret dans la zone de notification).
+    /// </summary>
+    private void ToggleOverlay()
+    {
+        _overlay ??= CreateOverlay();
+
+        if (_overlay.IsVisible)
+        {
+            _overlay.Hide();
+            if (_widgetWasVisibleBeforeOverlay)
+                ShowWidget();
+        }
+        else
+        {
+            _widgetWasVisibleBeforeOverlay = IsVisible;
+            if (IsVisible)
+                HideWidget(showHint: false);
+
+            _overlay.Show();
+            ShowOverlayHintOnce();
+        }
+
+        _tray.SetOverlayActive(_overlay.IsVisible);
+        UpdateRefreshState();
+    }
+
+    private OverlayWindow CreateOverlay()
+    {
+        Point? customPosition = _settings.OverlayLeft is double x && _settings.OverlayTop is double y
+            ? new Point(x, y)
+            : null;
+
+        var overlay = new OverlayWindow(_viewModel, _settings.OverlayCorner, customPosition, SaveOverlayPosition, ToggleOverlay);
+        overlay.IsVisibleChanged += (_, _) => UpdateRefreshState();
+        return overlay;
+    }
+
+    private void SaveOverlayPosition(double left, double top)
+    {
+        _settings.OverlayLeft = left;
+        _settings.OverlayTop = top;
+        SettingsService.Save(_settings);
+    }
+
+    /// <summary>Active le mode jeu si besoin, puis permet de déplacer la barre à la souris.</summary>
+    private void MoveOverlay()
+    {
+        if (_overlay?.IsVisible != true)
+            ToggleOverlay();
+
+        _overlay!.BeginMove();
+    }
+
+    private void SetOverlayCorner(OverlayCorner corner)
+    {
+        // Choisir un coin remplace la position libre.
+        _settings.OverlayCorner = corner;
+        _settings.OverlayLeft = null;
+        _settings.OverlayTop = null;
+        SettingsService.Save(_settings);
+        _overlay?.SetCorner(corner);
+    }
+
+    /// <summary>Le mode jeu n'est pas cliquable : la première fois, on explique comment en sortir.</summary>
+    private void ShowOverlayHintOnce()
+    {
+        if (_settings.HasShownOverlayHint)
+            return;
+
+        string howToExit = _hotkey?.IsRegistered == true
+            ? "Ctrl+Maj+L ou le menu de l'icône pour revenir au widget."
+            : "Le menu de l'icône pour revenir au widget (le raccourci est déjà pris par un autre logiciel).";
+        _tray.ShowHint("Mode jeu activé", howToExit);
+
+        _settings.HasShownOverlayHint = true;
+        SettingsService.Save(_settings);
+    }
+
+    private void OverlayButton_Click(object sender, RoutedEventArgs e) => ToggleOverlay();
+
     private void UpdateRefreshState()
     {
-        if (IsVisible)
+        // Les mesures tournent tant que le widget OU le mode jeu est affiché.
+        if (IsVisible || _overlay?.IsVisible == true)
         {
             _viewModel.Refresh(); // Valeurs à jour tout de suite, sans attendre une seconde.
             _timer.Start();
@@ -127,6 +219,8 @@ public partial class MainWindow : Window
         _timer.Stop();
         _provider.Dispose(); // Libère l'accès au matériel.
         _tray.Dispose();     // Retire l'icône de la zone de notification.
+        _hotkey?.Dispose();  // Libère le raccourci clavier pour les autres applications.
+        _overlay?.Close();
     }
 
     // ---- Position de la fenêtre ----
@@ -194,6 +288,9 @@ public partial class MainWindow : Window
 
         WindowEffects.Prepare(this);
         ApplyTheme(ThemeManager.FindOrDefault(_settings.ThemeId));
+
+        // Le raccourci global a besoin de la fenêtre Windows réelle : on l'enregistre ici.
+        _hotkey = new HotkeyService(this, ToggleOverlay);
     }
 
     private void ApplyTheme(ThemeDefinition theme)

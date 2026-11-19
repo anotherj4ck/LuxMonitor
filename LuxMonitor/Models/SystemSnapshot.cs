@@ -9,6 +9,15 @@ public sealed record DiskSnapshot(string RootPath, string Label, double TotalGb,
     public double UsedPercent => TotalGb <= 0 ? 0 : (TotalGb - FreeGb) / TotalGb * 100.0;
 }
 
+/// <summary>Coin de l'écran où s'affiche le mode jeu.</summary>
+public enum OverlayCorner
+{
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight,
+}
+
 public enum CpuVendor
 {
     Unknown,

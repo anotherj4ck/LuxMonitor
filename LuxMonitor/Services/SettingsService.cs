@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using LuxMonitor.Models;
 
 namespace LuxMonitor.Services;
 
@@ -14,6 +15,16 @@ public sealed class AppSettings
 
     /// <summary>Largeur choisie par l'utilisateur (la hauteur s'adapte toute seule).</summary>
     public double? WindowWidth { get; set; }
+
+    /// <summary>Coin de l'écran du mode jeu.</summary>
+    public OverlayCorner OverlayCorner { get; set; } = OverlayCorner.TopLeft;
+
+    /// <summary>Position libre du mode jeu, si l'utilisateur l'a déplacé (prioritaire sur le coin).</summary>
+    public double? OverlayLeft { get; set; }
+    public double? OverlayTop { get; set; }
+
+    /// <summary>La bulle d'explication du mode jeu a déjà été montrée.</summary>
+    public bool HasShownOverlayHint { get; set; }
 
     /// <summary>La bulle "Lux Monitor continue dans la zone de notification" a déjà été montrée.</summary>
     public bool HasShownTrayHint { get; set; }

@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.Windows;
+using LuxMonitor.Models;
 using Forms = System.Windows.Forms;
 
 namespace LuxMonitor.Services;
@@ -12,9 +13,52 @@ namespace LuxMonitor.Services;
 public sealed class TrayIconService : IDisposable
 {
     private readonly Forms.NotifyIcon _notifyIcon;
+    private readonly Forms.ToolStripMenuItem _overlayItem;
+    private readonly Dictionary<OverlayCorner, Forms.ToolStripMenuItem> _cornerItems = [];
 
-    public TrayIconService(Action toggleWindow, Action exitApplication)
+    public TrayIconService(
+        Action toggleWindow,
+        Action toggleOverlay,
+        Action moveOverlay,
+        Action<OverlayCorner> setOverlayCorner,
+        OverlayCorner currentCorner,
+        Action exitApplication)
     {
+        // Mode jeu + choix du coin (sous-menu avec une coche sur le coin actif).
+        _overlayItem = new Forms.ToolStripMenuItem("Mode jeu") { ShortcutKeyDisplayString = "Ctrl+Maj+L" };
+        _overlayItem.Click += (_, _) => toggleOverlay();
+
+        var cornerMenu = new Forms.ToolStripMenuItem("Position du mode jeu");
+
+        var moveItem = new Forms.ToolStripMenuItem("Déplacer à la souris…");
+        moveItem.Click += (_, _) =>
+        {
+            moveOverlay();
+            foreach (var cornerItem in _cornerItems.Values)
+                cornerItem.Checked = false; // Position libre : plus aucun coin coché.
+        };
+        cornerMenu.DropDownItems.Add(moveItem);
+        cornerMenu.DropDownItems.Add(new Forms.ToolStripSeparator());
+        (OverlayCorner Corner, string Label)[] corners =
+        [
+            (OverlayCorner.TopLeft, "En haut à gauche"),
+            (OverlayCorner.TopRight, "En haut à droite"),
+            (OverlayCorner.BottomLeft, "En bas à gauche"),
+            (OverlayCorner.BottomRight, "En bas à droite"),
+        ];
+        foreach (var (corner, label) in corners)
+        {
+            var item = new Forms.ToolStripMenuItem(label) { Checked = corner == currentCorner };
+            item.Click += (_, _) =>
+            {
+                setOverlayCorner(corner);
+                foreach (var (otherCorner, otherItem) in _cornerItems)
+                    otherItem.Checked = otherCorner == corner;
+            };
+            _cornerItems[corner] = item;
+            cornerMenu.DropDownItems.Add(item);
+        }
+
         var startupItem = new Forms.ToolStripMenuItem("Lancer au démarrage de Windows")
         {
             CheckOnClick = true,
@@ -28,6 +72,9 @@ public sealed class TrayIconService : IDisposable
 
         var menu = new Forms.ContextMenuStrip();
         menu.Items.Add("Afficher / masquer", null, (_, _) => toggleWindow());
+        menu.Items.Add(_overlayItem);
+        menu.Items.Add(cornerMenu);
+        menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add(startupItem);
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("Quitter Lux Monitor", null, (_, _) => exitApplication());
@@ -47,6 +94,9 @@ public sealed class TrayIconService : IDisposable
                 toggleWindow();
         };
     }
+
+    /// <summary>Coche "Mode jeu" dans le menu quand il est actif.</summary>
+    public void SetOverlayActive(bool isActive) => _overlayItem.Checked = isActive;
 
     /// <summary>Petite bulle d'information affichée par Windows près de l'icône.</summary>
     public void ShowHint(string title, string message)
