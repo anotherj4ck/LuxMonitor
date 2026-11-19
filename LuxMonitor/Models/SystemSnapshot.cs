@@ -28,6 +28,9 @@ public enum CpuVendor
 /// <summary>Identité du processeur : ne change pas pendant l'exécution.</summary>
 public sealed record CpuInfo(string Name, CpuVendor Vendor);
 
+/// <summary>Images par seconde de l'application au premier plan.</summary>
+public sealed record FpsInfo(double Value, string ProcessName);
+
 /// <summary>Une barrette de RAM : fabricant (vide si inconnu) et capacité.</summary>
 public sealed record RamModule(string Manufacturer, double CapacityGb);
 
@@ -65,7 +68,8 @@ public sealed record SystemSnapshot(
     double RamTotalGb,
     IReadOnlyList<RamModule> RamModules,
     IReadOnlyList<GpuSnapshot> Gpus,
-    IReadOnlyList<DiskSnapshot> Disks)
+    IReadOnlyList<DiskSnapshot> Disks,
+    FpsInfo? Fps)
 {
     public double RamPercent => RamTotalGb <= 0 ? 0 : RamUsedGb / RamTotalGb * 100.0;
 }

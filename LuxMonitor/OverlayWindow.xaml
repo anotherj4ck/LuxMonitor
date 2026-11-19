@@ -22,6 +22,7 @@
 
     <Window.Resources>
         <SolidColorBrush x:Key="OverlayLabelBrush" Color="#B3FFFFFF"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
 
     </Window.Resources>
 
@@ -33,6 +34,13 @@
     <!-- Voile sombre discret : garantit la lisibilité même sur une scène très claire -->
     <Border Background="#73000000" CornerRadius="10" Padding="12,6">
         <StackPanel Orientation="Horizontal">
+
+            <!-- FPS en premier : c'est l'info qu'on regarde le plus en jeu -->
+            <TextBlock Margin="0,0,18,0"
+                       Visibility="{Binding HasFps, Converter={StaticResource BoolToVisibility}}">
+                <Run Text="FPS" Foreground="{StaticResource OverlayLabelBrush}"/>
+                <Run Text="{Binding FpsText, Mode=OneWay}"/>
+            </TextBlock>
 
             <TextBlock>
                 <Run Text="CPU" Foreground="{StaticResource OverlayLabelBrush}"/>

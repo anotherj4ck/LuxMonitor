@@ -19,6 +19,7 @@ public sealed class WindowsSensorProvider : ISensorProvider
     private bool _hasPrevious;
 
     private readonly HardwareReader _hardware = new();
+    private readonly FpsMeter _fps = new();
 
     // L'identité du processeur ne change pas : on la lit une seule fois.
     private readonly CpuInfo _cpu = ReadCpuInfo();
@@ -54,7 +55,8 @@ public sealed class WindowsSensorProvider : ISensorProvider
             ramTotal,
             _ramModules,
             _hardware.ReadGpus(),
-            ReadDisks());
+            ReadDisks(),
+            _fps.Read());
     }
 
     public void Dispose()
@@ -66,6 +68,7 @@ public sealed class WindowsSensorProvider : ISensorProvider
 
             _disposed = true;
             _hardware.Dispose();
+            _fps.Dispose();
         }
     }
 

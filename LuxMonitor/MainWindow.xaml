@@ -115,6 +115,20 @@
             </Border.RenderTransform>
 
             <StackPanel>
+                <!-- FPS : visible seulement quand une application affiche des images (et en mode admin) -->
+                <Border Margin="0,0,0,10" Padding="16,12" CornerRadius="18" BorderThickness="1"
+                        Background="{DynamicResource TileBackgroundBrush}"
+                        BorderBrush="{DynamicResource TileBorderBrush}"
+                        Visibility="{Binding HasFps, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource TileLabel}">
+                            <Run Text="FPS  ·  "/>
+                            <Run Text="{Binding FpsProcessName, Mode=OneWay}"/>
+                        </TextBlock>
+                        <TextBlock Text="{Binding FpsText}" Style="{StaticResource TileValue}"/>
+                    </StackPanel>
+                </Border>
+
                 <!-- Processeur -->
                 <Button Style="{StaticResource TileButton}" Click="Cpu_Click"
                         ToolTip="Rechercher les mises à jour du processeur">
@@ -198,6 +212,18 @@
             </Border.RenderTransform>
 
             <StackPanel>
+                <!-- FPS -->
+                <Border Margin="0,0,0,6" Padding="12,7" CornerRadius="18" BorderThickness="1"
+                        Background="{DynamicResource TileBackgroundBrush}"
+                        BorderBrush="{DynamicResource TileBorderBrush}"
+                        ToolTip="{Binding FpsProcessName}"
+                        Visibility="{Binding HasFps, Converter={StaticResource BoolToVisibility}}">
+                    <Grid>
+                        <TextBlock Text="FPS" Style="{StaticResource CompactLabel}"/>
+                        <TextBlock Text="{Binding FpsText}" Style="{StaticResource CompactValue}"/>
+                    </Grid>
+                </Border>
+
                 <!-- Processeur -->
                 <Button Style="{StaticResource CompactTileButton}" Click="Cpu_Click"
                         ToolTip="{Binding CpuName}">

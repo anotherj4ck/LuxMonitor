@@ -34,7 +34,8 @@ public sealed class DemoSensorProvider : ISensorProvider
         [
             new DiskSnapshot(@"C:\", "Système", 476, 182),
             new DiskSnapshot(@"D:\", "Données", 931, 540),
-        ]);
+        ],
+        new FpsInfo(Math.Round(Drift(140, 20, 90, 165)), "demo-jeu"));
     }
 
     private double Drift(double value, double step, double min, double max)

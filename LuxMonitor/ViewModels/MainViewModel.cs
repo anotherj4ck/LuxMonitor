@@ -21,6 +21,8 @@ public sealed class MainViewModel : ObservableObject
     private string _ramText = "—";
     private string _ramModulesText = string.Empty;
     private bool _isThemePanelOpen;
+    private string _fpsText = string.Empty;
+    private string _fpsProcessName = string.Empty;
     private bool _isCompact;
 
     public MainViewModel(ISensorProvider provider, bool isDemo)
@@ -53,6 +55,26 @@ public sealed class MainViewModel : ObservableObject
     }
 
     public bool HasRamModules => RamModulesText.Length > 0;
+
+    /// <summary>FPS de l'application au premier plan ("144"), vide si indisponible.</summary>
+    public string FpsText
+    {
+        get => _fpsText;
+        private set
+        {
+            if (SetProperty(ref _fpsText, value))
+                OnPropertyChanged(nameof(HasFps));
+        }
+    }
+
+    /// <summary>Nom de l'application mesurée ("eldenring").</summary>
+    public string FpsProcessName
+    {
+        get => _fpsProcessName;
+        private set => SetProperty(ref _fpsProcessName, value);
+    }
+
+    public bool HasFps => FpsText.Length > 0;
 
     /// <summary>Disposition miniature (widget étroit) : une ligne par élément.</summary>
     public bool IsCompact
@@ -166,6 +188,9 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Transforme une photo de la machine en valeurs affichables (fil de l'interface uniquement).</summary>
     private void Apply(SystemSnapshot snapshot)
     {
+        FpsText = snapshot.Fps is FpsInfo fps ? $"{fps.Value:0}" : string.Empty;
+        FpsProcessName = snapshot.Fps?.ProcessName ?? string.Empty;
+
         CpuName = snapshot.Cpu.Name;
         CpuVendor = snapshot.Cpu.Vendor;
         CpuPercent = snapshot.CpuPercent;
