@@ -28,10 +28,25 @@ public static class ThemeManager
     /// </summary>
     public static void Apply(Window window, ThemeDefinition theme)
     {
+        Current = theme;
+
         // Le dictionnaire du thème est toujours en première position (voir App.xaml).
         var dictionaries = Application.Current.Resources.MergedDictionaries;
         dictionaries[0] = new ResourceDictionary { Source = new Uri(theme.ResourcePath, UriKind.Relative) };
 
+        ApplyBackdrop(window);
+    }
+
+    /// <summary>Thème actuellement appliqué.</summary>
+    public static ThemeDefinition Current { get; private set; } = Themes[0];
+
+    /// <summary>
+    /// Applique l'effet Windows du thème actif (Acrylic ou fond opaque) à une fenêtre.
+    /// Sert aussi pour les fenêtres secondaires (accueil...), pour qu'elles ressemblent au widget.
+    /// </summary>
+    public static void ApplyBackdrop(Window window)
+    {
+        ThemeDefinition theme = Current;
         bool acrylicApplied = WindowEffects.SetBackdrop(window, theme.UseAcrylic, theme.IsDark);
 
         // Si le thème voulait l'effet Acrylic mais que Windows ne le permet pas (Windows 10...),

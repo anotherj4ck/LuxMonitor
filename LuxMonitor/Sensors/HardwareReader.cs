@@ -1,9 +1,7 @@
-using System.Security.Principal;
 using System.Text;
 using LibreHardwareMonitor.Hardware;
 using LuxMonitor.Models;
 using LuxMonitor.Services;
-using Microsoft.Win32;
 
 namespace LuxMonitor.Sensors;
 
@@ -132,11 +130,11 @@ public sealed class HardwareReader : IDisposable
     public string BuildDiagnosticReport()
     {
         var report = new StringBuilder();
-        bool isAdmin = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
+        bool isAdmin = SystemInfo.IsAdministrator();
 
         report.AppendLine($"Date            : {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
         report.AppendLine($"Administrateur  : {(isAdmin ? "oui" : "non")}");
-        report.AppendLine($"PawnIO installé : {(IsPawnIoInstalled() ? "oui" : "non")}");
+        report.AppendLine($"PawnIO installé : {(SystemInfo.IsPawnIoInstalled() ? "oui" : "non")}");
         report.AppendLine($"Bibliothèque    : {(_isOpen ? "ouverte" : "échec à l'ouverture")}");
         report.AppendLine();
 
@@ -152,20 +150,6 @@ public sealed class HardwareReader : IDisposable
         }
 
         return report.ToString();
-    }
-
-    /// <summary>PawnIO s'enregistre comme programme installé : on vérifie sa présence dans le registre.</summary>
-    private static bool IsPawnIoInstalled()
-    {
-        try
-        {
-            using RegistryKey? key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PawnIO");
-            return key is not null;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
     }
 
     /// <summary>Cherche un capteur par type et par nom. Renvoie null s'il n'existe pas.</summary>

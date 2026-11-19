@@ -29,6 +29,7 @@ public partial class MainWindow : Window
     private OverlayWindow? _overlay;
     private HotkeyService? _hotkey;
     private bool _widgetWasVisibleBeforeOverlay;
+    private WelcomeWindow? _welcome;
 
     // Vrai seulement quand on quitte pour de bon (menu "Quitter").
     // Sinon, fermer la fenêtre la cache simplement dans la zone de notification.
@@ -55,7 +56,12 @@ public partial class MainWindow : Window
         _timer.Tick += async (_, _) => await _viewModel.RefreshAsync();
         IsVisibleChanged += (_, _) => UpdateRefreshState();
 
-        _tray = new TrayIconService(ToggleWidget, ToggleOverlay, MoveOverlay, SetOverlayCorner, _settings.OverlayCorner, ExitApplication);
+        _tray = new TrayIconService(ToggleWidget, ToggleOverlay, MoveOverlay, SetOverlayCorner, _settings.OverlayCorner,
+            ShowWelcome, _settings.AdminStartupEnabled, ExitApplication);
+
+        // Premier lancement : on présente la température et les FPS (une seule fois).
+        if (!_settings.HasShownWelcome)
+            Loaded += (_, _) => ShowWelcome();
         StartupService.RefreshPathIfEnabled();
 
         Closing += OnClosing;
@@ -103,6 +109,26 @@ public partial class MainWindow : Window
     {
         _isExiting = true;
         Close();
+    }
+
+    // ---- Accueil (température et FPS) ----
+
+    private void ShowWelcome()
+    {
+        if (_welcome is not null)
+        {
+            _welcome.Activate();
+            return;
+        }
+
+        _welcome = new WelcomeWindow(() => _settings.AdminStartupEnabled, ExitApplication);
+        _welcome.Closed += (_, _) =>
+        {
+            _welcome = null;
+            _settings.HasShownWelcome = true;
+            SettingsService.Save(_settings);
+        };
+        _welcome.Show();
     }
 
     // ---- Mode jeu ----
@@ -221,6 +247,7 @@ public partial class MainWindow : Window
         _tray.Dispose();     // Retire l'icône de la zone de notification.
         _hotkey?.Dispose();  // Libère le raccourci clavier pour les autres applications.
         _overlay?.Close();
+        _welcome?.Close();
     }
 
     // ---- Position de la fenêtre ----

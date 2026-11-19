@@ -26,6 +26,12 @@ public sealed class AppSettings
     /// <summary>La bulle d'explication du mode jeu a déjà été montrée.</summary>
     public bool HasShownOverlayHint { get; set; }
 
+    /// <summary>La fenêtre d'accueil a déjà été montrée (premier lancement).</summary>
+    public bool HasShownWelcome { get; set; }
+
+    /// <summary>Démarrage en administrateur via la tâche planifiée (température CPU et FPS).</summary>
+    public bool AdminStartupEnabled { get; set; }
+
     /// <summary>La bulle "Lux Monitor continue dans la zone de notification" a déjà été montrée.</summary>
     public bool HasShownTrayHint { get; set; }
 }

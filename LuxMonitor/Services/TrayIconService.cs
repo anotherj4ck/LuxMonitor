@@ -22,6 +22,8 @@ public sealed class TrayIconService : IDisposable
         Action moveOverlay,
         Action<OverlayCorner> setOverlayCorner,
         OverlayCorner currentCorner,
+        Action openWelcome,
+        bool adminStartupEnabled,
         Action exitApplication)
     {
         // Mode jeu + choix du coin (sous-menu avec une coche sur le coin actif).
@@ -64,6 +66,15 @@ public sealed class TrayIconService : IDisposable
             CheckOnClick = true,
             Checked = StartupService.IsEnabled(),
         };
+
+        // Avec le démarrage administrateur, c'est la tâche planifiée qui lance Lux Monitor :
+        // la case est cochée et grisée (on la gère depuis "Température et FPS…").
+        if (adminStartupEnabled)
+        {
+            startupItem.Checked = true;
+            startupItem.Enabled = false;
+            startupItem.Text = "Lancer au démarrage de Windows (en administrateur)";
+        }
         startupItem.CheckedChanged += (_, _) =>
         {
             if (!StartupService.SetEnabled(startupItem.Checked))
@@ -76,6 +87,7 @@ public sealed class TrayIconService : IDisposable
         menu.Items.Add(cornerMenu);
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add(startupItem);
+        menu.Items.Add("Température et FPS…", null, (_, _) => openWelcome());
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("Quitter Lux Monitor", null, (_, _) => exitApplication());
 

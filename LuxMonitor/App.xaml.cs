@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Windows;
+using LuxMonitor.Services;
 
 namespace LuxMonitor;
 
@@ -22,22 +23,21 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        _instanceMutex = new Mutex(initiallyOwned: true, MutexName, out bool isFirstInstance);
+        bool isAdminStartupChange = e.Args.Contains(AdminStartupService.EnableArgument)
+                                    || e.Args.Contains(AdminStartupService.DisableArgument);
 
-        if (!isFirstInstance)
+        // Après une relance en administrateur, l'ancienne instance est en train de se fermer :
+        // on lui laisse quelques secondes au lieu de conclure qu'un Lux Monitor tourne déjà.
+        if (!TryAcquireSingleInstance(waitForPrevious: isAdminStartupChange))
         {
-            // Déjà lancé : on réveille l'instance existante, et on s'arrête sans rien afficher.
-            if (EventWaitHandle.TryOpenExisting(ShowEventName, out EventWaitHandle? existing))
-            {
-                existing.Set();
-                existing.Dispose();
-            }
-
-            _instanceMutex.Dispose();
-            _instanceMutex = null;
+            SignalExistingInstance();
             Shutdown();
             return;
         }
+
+        // Seulement maintenant que l'ancienne instance est fermée (elle enregistre ses réglages
+        // en quittant, ce qui écraserait les nôtres) : on crée ou supprime la tâche planifiée.
+        HandleAdminStartupArgument(e.Args);
 
         var mainWindow = new MainWindow();
 
@@ -49,6 +49,93 @@ public partial class App : Application
         mainWindow.Show();
 
         ListenForShowRequests(mainWindow);
+    }
+
+    private bool TryAcquireSingleInstance(bool waitForPrevious)
+    {
+        try
+        {
+            _instanceMutex = new Mutex(initiallyOwned: false, MutexName);
+            bool acquired;
+            try
+            {
+                acquired = _instanceMutex.WaitOne(waitForPrevious ? TimeSpan.FromSeconds(10) : TimeSpan.Zero);
+            }
+            catch (AbandonedMutexException)
+            {
+                acquired = true; // L'instance précédente a planté sans libérer le verrou : on le récupère.
+            }
+
+            if (!acquired)
+            {
+                _instanceMutex.Dispose();
+                _instanceMutex = null;
+            }
+
+            return acquired;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Le verrou appartient à une instance lancée en administrateur : on ne peut même pas l'ouvrir.
+            // Cela suffit à savoir qu'un Lux Monitor tourne déjà.
+            return false;
+        }
+    }
+
+    /// <summary>Demande à l'instance déjà lancée de s'afficher (si on en a le droit).</summary>
+    private static void SignalExistingInstance()
+    {
+        try
+        {
+            if (EventWaitHandle.TryOpenExisting(ShowEventName, out EventWaitHandle? existing))
+            {
+                existing.Set();
+                existing.Dispose();
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Instance administrateur : une instance normale n'a pas le droit de la réveiller.
+        }
+    }
+
+    /// <summary>
+    /// Traite "--admin-startup=on/off" (Lux Monitor a été relancé en administrateur pour ça).
+    /// Renvoie true si l'argument était présent.
+    /// </summary>
+    private static bool HandleAdminStartupArgument(string[] args)
+    {
+        bool enable = args.Contains(AdminStartupService.EnableArgument);
+        bool disable = args.Contains(AdminStartupService.DisableArgument);
+        if (!enable && !disable)
+            return false;
+
+        AppSettings settings = SettingsService.Load();
+        settings.HasShownWelcome = true;
+
+        if (enable)
+        {
+            if (AdminStartupService.Enable())
+            {
+                // La tâche planifiée remplace la clé "Run" : sinon Lux Monitor serait lancé deux fois.
+                StartupService.SetEnabled(false);
+                settings.AdminStartupEnabled = true;
+            }
+            else
+            {
+                MessageBox.Show("Impossible de créer la tâche planifiée. Lux Monitor continue sans démarrage administrateur.",
+                    "Lux Monitor", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        else if (AdminStartupService.Disable())
+        {
+            // On garde un démarrage automatique, mais normal (sans droits admin).
+            StartupService.SetEnabled(true);
+            settings.AdminStartupEnabled = false;
+        }
+
+        SettingsService.Save(settings);
+        return true;
     }
 
     /// <summary>
@@ -83,7 +170,14 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
-        _instanceMutex?.ReleaseMutex();
+        try
+        {
+            _instanceMutex?.ReleaseMutex();
+        }
+        catch (ApplicationException)
+        {
+            // Verrou déjà libéré : rien à faire.
+        }
         _instanceMutex?.Dispose();
         base.OnExit(e);
     }
