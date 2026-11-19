@@ -2,6 +2,7 @@ using System.Security.Principal;
 using System.Text;
 using LibreHardwareMonitor.Hardware;
 using LuxMonitor.Models;
+using LuxMonitor.Services;
 using Microsoft.Win32;
 
 namespace LuxMonitor.Sensors;
@@ -39,9 +40,10 @@ public sealed class HardwareReader : IDisposable
             _computer.Open();
             _isOpen = true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Si la bibliothèque échoue, Lux Monitor continue sans ces capteurs plutôt que de planter.
+            DiagnosticLog.Add("Capteurs", ex);
             _isOpen = false;
         }
     }
@@ -58,8 +60,9 @@ public sealed class HardwareReader : IDisposable
             {
                 hardware.Update();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                DiagnosticLog.Add($"Capteurs/{hardware.HardwareType}", ex);
                 // Un composant qui répond mal (pilote en cours de mise à jour...) ne doit pas bloquer les autres.
             }
         }

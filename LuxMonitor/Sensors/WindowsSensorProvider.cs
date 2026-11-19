@@ -2,6 +2,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 using LuxMonitor.Models;
+using LuxMonitor.Services;
 
 namespace LuxMonitor.Sensors;
 
@@ -72,23 +73,42 @@ public sealed class WindowsSensorProvider : ISensorProvider
         }
     }
 
+    // Rapport de diagnostic : toujours en Debug, et en version publiée si on lance "LuxMonitor.exe --diagnostic".
+    private static readonly bool DiagnosticRequested =
+#if DEBUG
+        true;
+#else
+        Environment.GetCommandLineArgs().Contains("--diagnostic", StringComparer.OrdinalIgnoreCase);
+#endif
+
+    private int _readCount;
     private bool _diagnosticWritten;
 
     /// <summary>
-    /// En mode Debug uniquement : écrit la liste des capteurs dans "diagnostic-capteurs.txt",
-    /// à côté de l'exe, au premier rafraîchissement. Rien n'est écrit dans la version publiée.
+    /// Écrit "diagnostic-capteurs.txt" à côté de l'exe, après quelques secondes de fonctionnement
+    /// (le temps que les FPS et les capteurs aient démarré, et que d'éventuelles erreurs apparaissent).
     /// </summary>
-    [System.Diagnostics.Conditional("DEBUG")]
     private void WriteDiagnosticOnce()
     {
-        if (_diagnosticWritten)
+        if (!DiagnosticRequested || _diagnosticWritten || ++_readCount < 5)
             return;
         _diagnosticWritten = true;
 
         try
         {
-            string path = Path.Combine(AppContext.BaseDirectory, "diagnostic-capteurs.txt");
-            File.WriteAllText(path, _hardware.BuildDiagnosticReport());
+            // Dossier de l'exe (et non AppContext.BaseDirectory, qui peut pointer vers un dossier
+            // temporaire quand l'application est publiée en un seul fichier).
+            string folder = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
+
+            var report = new System.Text.StringBuilder();
+            report.AppendLine($"Lux Monitor {typeof(WindowsSensorProvider).Assembly.GetName().Version}");
+            report.AppendLine($"FPS             : {_fps.Status}, {_fps.EventsReceived} événements DirectX reçus");
+            report.Append(_hardware.BuildDiagnosticReport());
+            report.AppendLine("Erreurs attrapées :");
+            foreach (string entry in DiagnosticLog.GetEntries())
+                report.AppendLine("    " + entry);
+
+            File.WriteAllText(Path.Combine(folder, "diagnostic-capteurs.txt"), report.ToString());
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

@@ -10,6 +10,40 @@
     <UseWindowsForms>true</UseWindowsForms>
     <!-- Icône de l'exe (Explorateur, Gestionnaire des tâches...). -->
     <ApplicationIcon>Assets\LuxMonitor.ico</ApplicationIcon>
+
+    <!-- Les bibliothèques embarquent des traductions dans des dizaines de langues :
+         on ne garde que le français et l'anglais (exe plus léger). -->
+    <SatelliteResourceLanguages>fr;en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <!-- Informations visibles dans Propriétés > Détails de l'exe. Changer Version à chaque Release. -->
+  <PropertyGroup>
+    <Product>Lux Monitor</Product>
+    <AssemblyTitle>Lux Monitor</AssemblyTitle>
+    <Description>Widget de supervision Windows, libre et gratuit.</Description>
+    <Authors>anotherj4ck</Authors>
+    <Copyright>© 2026 anotherj4ck</Copyright>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <!-- Version publiée (Release) : un seul exe autonome, qui tourne sans installer .NET.
+       - SelfContained : le moteur .NET est inclus dans l'exe.
+       - PublishSingleFile : tout est regroupé en un seul fichier.
+       - IncludeNativeLibrariesForSelfExtract / IncludeAllContentForSelfExtract : voir plus bas.
+       - EnableCompressionInSingleFile : exe compressé (plus petit à télécharger).
+       Pas de "trimming" (suppression du code inutilisé) : WPF ne le supporte pas. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!-- Extrait TOUT le contenu (pas seulement les DLL natives) dans un dossier temporaire au lancement.
+         Nécessaire ici : LibreHardwareMonitor et TraceEvent cherchent leurs fichiers à côté de leur
+         propre DLL, ce qui ne marche pas quand tout reste enfermé dans l'exe.
+         Contrepartie : un premier lancement un peu plus lent (extraction, une seule fois par version). -->
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>none</DebugType>
   </PropertyGroup>
 
   <!-- WPF et Windows Forms ont des classes au même nom (Application, MessageBox, Button...).

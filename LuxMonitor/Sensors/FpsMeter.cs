@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using LuxMonitor.Models;
+using LuxMonitor.Services;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Session;
 
@@ -43,12 +44,19 @@ public sealed class FpsMeter : IDisposable
     private static readonly TimeSpan StaleAfter = TimeSpan.FromSeconds(3);
 
     private readonly TraceEventSession? _session;
+
+    /// <summary>État de la mesure, pour le rapport de diagnostic.</summary>
+    public string Status { get; } = "non démarrés";
     private readonly Dictionary<int, string> _processNames = [];
     private readonly int _ownProcessId = Environment.ProcessId;
 
     // Historique des images par processus. Rempli par le fil ETW, lu par Read() : dictionnaire "concurrent".
     private readonly ConcurrentDictionary<int, FrameHistory> _frames = new();
     private int _lastTargetProcessId;
+    private long _eventsReceived;
+
+    /// <summary>Nombre d'événements DirectX reçus depuis le lancement (diagnostic).</summary>
+    public long EventsReceived => Interlocked.Read(ref _eventsReceived);
 
     /// <summary>
     /// Horodatages des dernières images d'un processus.
@@ -98,7 +106,10 @@ public sealed class FpsMeter : IDisposable
     public FpsMeter()
     {
         if (TraceEventSession.IsElevated() != true)
+        {
+            Status = "désactivés (pas administrateur)";
             return; // Pas administrateur : pas de FPS, sans erreur.
+        }
 
         try
         {
@@ -117,9 +128,10 @@ public sealed class FpsMeter : IDisposable
                 {
                     session.Source.Process();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     // Session arrêtée (fermeture de l'appli) : fin normale de l'écoute.
+                    DiagnosticLog.Add("FPS/écoute", ex);
                 }
             })
             {
@@ -129,15 +141,20 @@ public sealed class FpsMeter : IDisposable
             listener.Start();
 
             _session = session;
+            Status = "actifs";
         }
-        catch (Exception ex) when (ex is UnauthorizedAccessException or COMException or InvalidOperationException)
+        catch (Exception ex)
         {
+            // Fonction facultative : quelle que soit l'erreur, Lux Monitor continue sans FPS.
+            DiagnosticLog.Add("FPS", ex);
+            Status = $"erreur au démarrage ({ex.GetType().Name})";
             _session = null;
         }
     }
 
     private void OnEvent(TraceEvent data)
     {
+        _eventsReceived++;
         int id = (int)data.ID;
         bool isPresent =
             (data.ProviderGuid == DxgiProvider && (id == DxgiPresentStart || id == DxgiPresentMultiplaneOverlayStart))
@@ -152,6 +169,8 @@ public sealed class FpsMeter : IDisposable
     {
         if (_session is null)
             return null;
+
+        RemoveOldProcesses();
 
         // Si on clique sur Lux Monitor, on garde les FPS du jeu qui était au premier plan juste avant.
         int processId = GetForegroundProcessId();
@@ -175,6 +194,17 @@ public sealed class FpsMeter : IDisposable
             return null;
 
         return new FpsInfo(fps, name);
+    }
+
+    /// <summary>Oublie les processus qui n'affichent plus rien depuis une minute (fermés, en pause...).</summary>
+    private void RemoveOldProcesses()
+    {
+        DateTime limit = DateTime.UtcNow - TimeSpan.FromMinutes(1);
+        foreach (var (processId, history) in _frames)
+        {
+            if (history.LastReceivedUtc < limit)
+                _frames.TryRemove(processId, out _);
+        }
     }
 
     private string GetProcessName(int processId)
