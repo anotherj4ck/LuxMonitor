@@ -52,7 +52,7 @@ public partial class MainWindow : Window
         // Rafraîchissement toutes les secondes, uniquement quand la fenêtre est visible :
         // cachée, Lux Monitor n'interroge plus le matériel (économie de batterie, GPU qui peut dormir).
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-        _timer.Tick += (_, _) => _viewModel.Refresh();
+        _timer.Tick += async (_, _) => await _viewModel.RefreshAsync();
         IsVisibleChanged += (_, _) => UpdateRefreshState();
 
         _tray = new TrayIconService(ToggleWidget, ToggleOverlay, MoveOverlay, SetOverlayCorner, _settings.OverlayCorner, ExitApplication);
@@ -194,7 +194,7 @@ public partial class MainWindow : Window
         // Les mesures tournent tant que le widget OU le mode jeu est affiché.
         if (IsVisible || _overlay?.IsVisible == true)
         {
-            _viewModel.Refresh(); // Valeurs à jour tout de suite, sans attendre une seconde.
+            _ = _viewModel.RefreshAsync(); // Valeurs à jour tout de suite, sans attendre une seconde.
             _timer.Start();
         }
         else

@@ -125,10 +125,47 @@ public sealed class MainViewModel : ObservableObject
         private set => SetProperty(ref _ramText, value);
     }
 
-    public void Refresh()
-    {
-        SystemSnapshot snapshot = _provider.Read();
+    private bool _isRefreshing;
 
+    /// <summary>
+    /// Lit les capteurs SUR UN AUTRE FIL D'EXÉCUTION, puis met à jour l'affichage.
+    /// Pourquoi : une lecture (PawnIO, GPU, disques) peut prendre des dizaines de millisecondes.
+    /// Faite sur le fil de l'interface, elle figeait la fenêtre (déplacement saccadé).
+    /// Ici, l'interface reste libre pendant la lecture et ne reçoit que le résultat.
+    /// </summary>
+    public async Task RefreshAsync()
+    {
+        // Si la lecture précédente n'est pas finie (capteur lent), on saute ce tour
+        // plutôt que d'empiler les lectures.
+        if (_isRefreshing)
+            return;
+
+        _isRefreshing = true;
+        try
+        {
+            SystemSnapshot snapshot = await Task.Run(() => _provider.Read());
+
+            // Après le "await", on est revenu sur le fil de l'interface : on peut modifier l'affichage.
+            Apply(snapshot);
+        }
+        catch (ObjectDisposedException)
+        {
+            // L'application se ferme pendant une lecture : rien à afficher.
+        }
+        catch (Exception ex)
+        {
+            // Une lecture ratée ne doit pas faire planter le widget : on réessaiera à la prochaine seconde.
+            System.Diagnostics.Debug.WriteLine($"Lecture des capteurs échouée : {ex}");
+        }
+        finally
+        {
+            _isRefreshing = false;
+        }
+    }
+
+    /// <summary>Transforme une photo de la machine en valeurs affichables (fil de l'interface uniquement).</summary>
+    private void Apply(SystemSnapshot snapshot)
+    {
         CpuName = snapshot.Cpu.Name;
         CpuVendor = snapshot.Cpu.Vendor;
         CpuPercent = snapshot.CpuPercent;

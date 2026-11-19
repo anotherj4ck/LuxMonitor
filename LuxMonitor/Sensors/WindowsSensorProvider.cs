@@ -26,7 +26,21 @@ public sealed class WindowsSensorProvider : ISensorProvider
     // Les barrettes de RAM ne changent pas pendant que le PC tourne : lecture unique.
     private readonly IReadOnlyList<RamModule> _ramModules = RamModuleReader.Read();
 
+    // Read() tourne en arrière-plan et Dispose() sur le fil de l'interface :
+    // ce verrou garantit qu'on ne libère jamais le matériel au milieu d'une lecture.
+    private readonly object _sync = new();
+    private bool _disposed;
+
     public SystemSnapshot Read()
+    {
+        lock (_sync)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return ReadUnsafe();
+        }
+    }
+
+    private SystemSnapshot ReadUnsafe()
     {
         var (ramUsed, ramTotal) = ReadRam();
         _hardware.Update(); // Une seule mise à jour des capteurs par rafraîchissement.
@@ -43,7 +57,17 @@ public sealed class WindowsSensorProvider : ISensorProvider
             ReadDisks());
     }
 
-    public void Dispose() => _hardware.Dispose();
+    public void Dispose()
+    {
+        lock (_sync)
+        {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+            _hardware.Dispose();
+        }
+    }
 
     private bool _diagnosticWritten;
 
