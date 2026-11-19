@@ -12,6 +12,7 @@ public sealed class GpuViewModel : ObservableObject
     private string _loadText = "—";
     private double _loadPercent;
     private string _detail = string.Empty;
+    private string _temperatureText = string.Empty;
 
     public GpuViewModel(string id, GpuVendor vendor)
     {
@@ -48,11 +49,20 @@ public sealed class GpuViewModel : ObservableObject
         private set => SetProperty(ref _detail, value);
     }
 
+    /// <summary>Température seule, pour la disposition miniature (vide si inconnue).</summary>
+    public string TemperatureText
+    {
+        get => _temperatureText;
+        private set => SetProperty(ref _temperatureText, value);
+    }
+
     public void Update(GpuSnapshot snapshot)
     {
         Name = ShortenName(snapshot.Name);
         LoadPercent = snapshot.LoadPercent ?? 0;
         LoadText = snapshot.LoadPercent is double load ? $"{load:0} %" : "—";
+
+        TemperatureText = snapshot.TemperatureC is double t ? $"{t:0} °C  " : string.Empty;
 
         // On n'affiche que ce qui est connu : pas de "0 °C" inventé.
         var parts = new List<string>();

@@ -27,6 +27,7 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
     </Window.Resources>
 
+    <Grid>
     <StackPanel Margin="14,12,14,4">
 
         <!-- En-tête -->
@@ -39,7 +40,8 @@
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="Lux" FontSize="16" FontWeight="SemiBold"/>
                 <TextBlock Text=" Monitor" FontSize="16" FontWeight="Light"
-                           Foreground="{DynamicResource MutedTextBrush}"/>
+                           Foreground="{DynamicResource MutedTextBrush}"
+                           Visibility="{Binding IsNormalLayout, Converter={StaticResource BoolToVisibility}}"/>
                 <Border Margin="10,0,0,0" Padding="7,1" CornerRadius="8" VerticalAlignment="Center"
                         Background="{DynamicResource BadgeBrush}"
                         Visibility="{Binding IsDemo, Converter={StaticResource BoolToVisibility}}">
@@ -71,7 +73,8 @@
                 <ItemsControl ItemsSource="{Binding ThemeOptions}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <UniformGrid Rows="1"/>
+                            <!-- WrapPanel : les pastilles passent à la ligne si le widget est étroit -->
+                            <WrapPanel HorizontalAlignment="Center"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
 
@@ -102,71 +105,171 @@
             </StackPanel>
         </Border>
 
-        <!-- Processeur -->
-        <Button Style="{StaticResource TileButton}" Click="Cpu_Click"
-                ToolTip="Rechercher les mises à jour du processeur">
+        <!-- ===== Disposition NORMALE ===== -->
+        <Border Style="{StaticResource RevealPanel}"
+                Visibility="{Binding IsNormalLayout, Converter={StaticResource BoolToVisibility}}">
+            <Border.RenderTransform>
+                <TranslateTransform/>
+            </Border.RenderTransform>
+
             <StackPanel>
-                <TextBlock Style="{StaticResource TileLabel}">
-                    <Run Text="Processeur  ·  "/>
-                    <Run Text="{Binding CpuName, Mode=OneWay}"/>
-                </TextBlock>
-                <TextBlock Text="{Binding CpuText}" Style="{StaticResource TileValue}"/>
-                <ProgressBar Style="{StaticResource Gauge}" Value="{Binding CpuPercent, Mode=OneWay}"/>
+                <!-- Processeur -->
+                <Button Style="{StaticResource TileButton}" Click="Cpu_Click"
+                        ToolTip="Rechercher les mises à jour du processeur">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource TileLabel}">
+                            <Run Text="Processeur  ·  "/>
+                            <Run Text="{Binding CpuName, Mode=OneWay}"/>
+                        </TextBlock>
+                        <TextBlock Text="{Binding CpuText}" Style="{StaticResource TileValue}"/>
+                        <ProgressBar Style="{StaticResource Gauge}" Value="{Binding CpuPercent, Mode=OneWay}"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Cartes graphiques -->
+                <ItemsControl ItemsSource="{Binding Gpus}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:GpuViewModel}">
+                            <Button Style="{StaticResource TileButton}" Click="Gpu_Click"
+                                    ToolTip="Ouvrir le logiciel de la carte graphique">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource TileLabel}">
+                                        <Run Text="Carte graphique  ·  "/>
+                                        <Run Text="{Binding Name, Mode=OneWay}"/>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding LoadText}" Style="{StaticResource TileValue}"/>
+                                    <ProgressBar Style="{StaticResource Gauge}" Value="{Binding LoadPercent, Mode=OneWay}"/>
+                                    <TextBlock Text="{Binding Detail}" Style="{StaticResource TileDetail}"/>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Mémoire -->
+                <Button Style="{StaticResource TileButton}" Click="Ram_Click"
+                        ToolTip="Ouvrir le Gestionnaire des tâches">
+                    <StackPanel>
+                        <TextBlock Text="Mémoire" Style="{StaticResource TileLabel}"/>
+                        <TextBlock Text="{Binding RamText}" Style="{StaticResource TileValue}"/>
+                        <ProgressBar Style="{StaticResource Gauge}" Value="{Binding RamPercent, Mode=OneWay}"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Disques -->
+                <TextBlock Text="DISQUES" Style="{StaticResource SectionTitle}"/>
+
+                <ItemsControl ItemsSource="{Binding Disks}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:DiskViewModel}">
+                            <Button Style="{StaticResource TileButton}" Click="Disk_Click"
+                                    ToolTip="Ouvrir dans l'Explorateur de fichiers">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource TileLabel}">
+                                        <Run Text="{Binding Title, Mode=OneWay}"/>
+                                        <Run Text="  ·  "/>
+                                        <Run Text="{Binding Label, Mode=OneWay}"/>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding UsedPercent, StringFormat={}{0:0} %}"
+                                               Style="{StaticResource TileValue}"/>
+                                    <ProgressBar Style="{StaticResource Gauge}" Value="{Binding UsedPercent, Mode=OneWay}"/>
+                                    <TextBlock Text="{Binding Detail}" Style="{StaticResource TileDetail}"/>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </StackPanel>
-        </Button>
+        </Border>
 
-        <!-- Cartes graphiques -->
-        <ItemsControl ItemsSource="{Binding Gpus}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="{x:Type vm:GpuViewModel}">
-                    <Button Style="{StaticResource TileButton}" Click="Gpu_Click"
-                            ToolTip="Ouvrir le logiciel de la carte graphique">
-                        <StackPanel>
-                            <TextBlock Style="{StaticResource TileLabel}">
-                                <Run Text="Carte graphique  ·  "/>
-                                <Run Text="{Binding Name, Mode=OneWay}"/>
-                            </TextBlock>
-                            <TextBlock Text="{Binding LoadText}" Style="{StaticResource TileValue}"/>
-                            <ProgressBar Style="{StaticResource Gauge}" Value="{Binding LoadPercent, Mode=OneWay}"/>
-                            <TextBlock Text="{Binding Detail}" Style="{StaticResource TileDetail}"/>
-                        </StackPanel>
-                    </Button>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        <!-- ===== Disposition MINIATURE : une ligne par élément ===== -->
+        <Border Style="{StaticResource RevealPanel}"
+                Visibility="{Binding IsCompact, Converter={StaticResource BoolToVisibility}}">
+            <Border.RenderTransform>
+                <TranslateTransform/>
+            </Border.RenderTransform>
 
-        <!-- Mémoire -->
-        <Button Style="{StaticResource TileButton}" Click="Ram_Click"
-                ToolTip="Ouvrir le Gestionnaire des tâches">
             <StackPanel>
-                <TextBlock Text="Mémoire" Style="{StaticResource TileLabel}"/>
-                <TextBlock Text="{Binding RamText}" Style="{StaticResource TileValue}"/>
-                <ProgressBar Style="{StaticResource Gauge}" Value="{Binding RamPercent, Mode=OneWay}"/>
+                <!-- Processeur -->
+                <Button Style="{StaticResource CompactTileButton}" Click="Cpu_Click"
+                        ToolTip="{Binding CpuName}">
+                    <StackPanel>
+                        <Grid>
+                            <TextBlock Text="CPU" Style="{StaticResource CompactLabel}"/>
+                            <TextBlock Text="{Binding CpuText}" Style="{StaticResource CompactValue}"/>
+                        </Grid>
+                        <ProgressBar Style="{StaticResource GaugeThin}" Value="{Binding CpuPercent, Mode=OneWay}"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Cartes graphiques -->
+                <ItemsControl ItemsSource="{Binding Gpus}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:GpuViewModel}">
+                            <Button Style="{StaticResource CompactTileButton}" Click="Gpu_Click"
+                                    ToolTip="{Binding Name}">
+                                <StackPanel>
+                                    <Grid>
+                                        <TextBlock Text="GPU" Style="{StaticResource CompactLabel}"/>
+                                        <TextBlock Style="{StaticResource CompactValue}">
+                                            <Run Text="{Binding TemperatureText, Mode=OneWay}"
+                                                 Foreground="{DynamicResource MutedTextBrush}"/>
+                                            <Run Text="{Binding LoadText, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </Grid>
+                                    <ProgressBar Style="{StaticResource GaugeThin}" Value="{Binding LoadPercent, Mode=OneWay}"/>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Mémoire -->
+                <Button Style="{StaticResource CompactTileButton}" Click="Ram_Click"
+                        ToolTip="{Binding RamText}">
+                    <StackPanel>
+                        <Grid>
+                            <TextBlock Text="RAM" Style="{StaticResource CompactLabel}"/>
+                            <TextBlock Text="{Binding RamPercent, StringFormat={}{0:0} %}" Style="{StaticResource CompactValue}"/>
+                        </Grid>
+                        <ProgressBar Style="{StaticResource GaugeThin}" Value="{Binding RamPercent, Mode=OneWay}"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Disques -->
+                <ItemsControl ItemsSource="{Binding Disks}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:DiskViewModel}">
+                            <Button Style="{StaticResource CompactTileButton}" Click="Disk_Click"
+                                    ToolTip="{Binding Detail}">
+                                <StackPanel>
+                                    <Grid>
+                                        <TextBlock Text="{Binding Title}" Style="{StaticResource CompactLabel}"/>
+                                        <TextBlock Text="{Binding UsedPercent, StringFormat={}{0:0} %}"
+                                                   Style="{StaticResource CompactValue}"/>
+                                    </Grid>
+                                    <ProgressBar Style="{StaticResource GaugeThin}" Value="{Binding UsedPercent, Mode=OneWay}"/>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </StackPanel>
-        </Button>
-
-        <!-- Disques -->
-        <TextBlock Text="DISQUES" Style="{StaticResource SectionTitle}"/>
-
-        <ItemsControl ItemsSource="{Binding Disks}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="{x:Type vm:DiskViewModel}">
-                    <Button Style="{StaticResource TileButton}" Click="Disk_Click"
-                            ToolTip="Ouvrir dans l'Explorateur de fichiers">
-                        <StackPanel>
-                            <TextBlock Style="{StaticResource TileLabel}">
-                                <Run Text="{Binding Title, Mode=OneWay}"/>
-                                <Run Text="  ·  "/>
-                                <Run Text="{Binding Label, Mode=OneWay}"/>
-                            </TextBlock>
-                            <TextBlock Text="{Binding UsedPercent, StringFormat={}{0:0} %}"
-                                       Style="{StaticResource TileValue}"/>
-                            <ProgressBar Style="{StaticResource Gauge}" Value="{Binding UsedPercent, Mode=OneWay}"/>
-                            <TextBlock Text="{Binding Detail}" Style="{StaticResource TileDetail}"/>
-                        </StackPanel>
-                    </Button>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        </Border>
     </StackPanel>
+
+    <!-- Poignée de redimensionnement (largeur) : la disposition s'adapte toute seule. -->
+    <Thumb HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,4,4"
+           Width="16" Height="16" Cursor="SizeWE" ToolTip="Glisser pour redimensionner"
+           DragDelta="ResizeGrip_DragDelta" DragCompleted="ResizeGrip_DragCompleted">
+        <Thumb.Template>
+            <ControlTemplate TargetType="Thumb">
+                <Border Background="Transparent">
+                    <Path Data="M 12,4 L 4,12 M 12,8 L 8,12" Stroke="{DynamicResource MutedTextBrush}"
+                          StrokeThickness="1.2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                </Border>
+            </ControlTemplate>
+        </Thumb.Template>
+    </Thumb>
+    </Grid>
 </Window>

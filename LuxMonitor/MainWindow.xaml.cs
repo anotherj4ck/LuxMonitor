@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Threading;
 using LuxMonitor.Models;
@@ -12,6 +13,11 @@ namespace LuxMonitor;
 public partial class MainWindow : Window
 {
     private const double ScreenMargin = 24;
+
+    // Largeurs possibles du widget, et seuil de passage en miniature.
+    private const double MinWidgetWidth = 150;
+    private const double MaxWidgetWidth = 480;
+    private const double CompactThreshold = 250;
 
     private readonly ISensorProvider _provider;
     private readonly MainViewModel _viewModel;
@@ -35,6 +41,7 @@ public partial class MainWindow : Window
         _viewModel = new MainViewModel(_provider, isDemo);
         DataContext = _viewModel;
 
+        ApplyWidth(_settings.WindowWidth ?? Width);
         RestorePosition();
 
         // Rafraîchissement toutes les secondes, uniquement quand la fenêtre est visible :
@@ -151,6 +158,29 @@ public partial class MainWindow : Window
     {
         _settings.WindowLeft = Left;
         _settings.WindowTop = Top;
+        SettingsService.Save(_settings);
+    }
+
+    // ---- Taille et disposition ----
+
+    /// <summary>
+    /// Applique une largeur (bornée) et choisit la disposition qui va avec.
+    /// La hauteur, elle, suit le contenu (SizeToContent="Height").
+    /// </summary>
+    private void ApplyWidth(double width)
+    {
+        Width = Math.Clamp(width, MinWidgetWidth, MaxWidgetWidth);
+        _viewModel.IsCompact = Width < CompactThreshold;
+    }
+
+    // On gère le redimensionnement nous-mêmes (poignée en bas à droite) plutôt que de laisser
+    // Windows le faire : sinon WPF désactive SizeToContent et la hauteur ne suit plus le contenu.
+    private void ResizeGrip_DragDelta(object sender, DragDeltaEventArgs e)
+        => ApplyWidth(Width + e.HorizontalChange);
+
+    private void ResizeGrip_DragCompleted(object sender, DragCompletedEventArgs e)
+    {
+        _settings.WindowWidth = Width;
         SettingsService.Save(_settings);
     }
 

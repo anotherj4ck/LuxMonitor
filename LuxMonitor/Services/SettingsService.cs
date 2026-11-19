@@ -12,6 +12,9 @@ public sealed class AppSettings
     public double? WindowLeft { get; set; }
     public double? WindowTop { get; set; }
 
+    /// <summary>Largeur choisie par l'utilisateur (la hauteur s'adapte toute seule).</summary>
+    public double? WindowWidth { get; set; }
+
     /// <summary>La bulle "Lux Monitor continue dans la zone de notification" a déjà été montrée.</summary>
     public bool HasShownTrayHint { get; set; }
 }

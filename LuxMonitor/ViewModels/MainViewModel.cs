@@ -19,6 +19,7 @@ public sealed class MainViewModel : ObservableObject
     private double _ramPercent;
     private string _ramText = "—";
     private bool _isThemePanelOpen;
+    private bool _isCompact;
 
     public MainViewModel(ISensorProvider provider, bool isDemo)
     {
@@ -37,6 +38,20 @@ public sealed class MainViewModel : ObservableObject
         get => _isThemePanelOpen;
         set => SetProperty(ref _isThemePanelOpen, value);
     }
+
+    /// <summary>Disposition miniature (widget étroit) : une ligne par élément.</summary>
+    public bool IsCompact
+    {
+        get => _isCompact;
+        set
+        {
+            if (SetProperty(ref _isCompact, value))
+                OnPropertyChanged(nameof(IsNormalLayout));
+        }
+    }
+
+    /// <summary>Inverse de IsCompact, pour l'affichage (WPF n'a pas de convertisseur "inverse" intégré).</summary>
+    public bool IsNormalLayout => !IsCompact;
 
     /// <summary>Place la coche sur le thème actif.</summary>
     public void SetActiveTheme(string themeId)

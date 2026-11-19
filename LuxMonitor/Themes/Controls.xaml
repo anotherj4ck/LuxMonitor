@@ -13,13 +13,14 @@
         <Setter Property="Margin" Value="0,0,0,10"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Padding" Value="16,12"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="Card"
                             Background="{DynamicResource TileBackgroundBrush}"
                             BorderBrush="{DynamicResource TileBorderBrush}"
-                            BorderThickness="1" CornerRadius="18" Padding="16,12">
+                            BorderThickness="1" CornerRadius="18" Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Stretch"/>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -36,6 +37,12 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- Tuile de la disposition miniature : même verre, plus serrée -->
+    <Style x:Key="CompactTileButton" TargetType="Button" BasedOn="{StaticResource TileButton}">
+        <Setter Property="Padding" Value="12,7"/>
+        <Setter Property="Margin" Value="0,0,0,6"/>
     </Style>
 
     <!-- Petit bouton rond en verre (fermer, et bientôt changer de thème) -->
@@ -87,6 +94,12 @@
         </Setter>
     </Style>
 
+    <!-- Jauge encore plus fine pour la miniature -->
+    <Style x:Key="GaugeThin" TargetType="ProgressBar" BasedOn="{StaticResource Gauge}">
+        <Setter Property="Height" Value="3"/>
+        <Setter Property="Margin" Value="0,6,0,0"/>
+    </Style>
+
     <!-- Textes -->
     <Style x:Key="TileLabel" TargetType="TextBlock">
         <Setter Property="FontSize" Value="12"/>
@@ -105,6 +118,18 @@
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="Margin" Value="0,8,0,0"/>
         <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+    </Style>
+
+    <Style x:Key="CompactLabel" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+    </Style>
+
+    <Style x:Key="CompactValue" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
     </Style>
 
     <Style x:Key="SectionTitle" TargetType="TextBlock">

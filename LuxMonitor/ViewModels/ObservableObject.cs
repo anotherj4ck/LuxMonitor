@@ -17,7 +17,11 @@ public abstract class ObservableObject : INotifyPropertyChanged
             return false;
 
         field = value;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        OnPropertyChanged(propertyName);
         return true;
     }
+
+    /// <summary>Prévient l'interface qu'une propriété calculée (sans champ propre) a changé.</summary>
+    protected void OnPropertyChanged(string? propertyName)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }
