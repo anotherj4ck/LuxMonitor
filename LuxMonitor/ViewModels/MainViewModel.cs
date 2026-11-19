@@ -16,6 +16,7 @@ public sealed class MainViewModel : ObservableObject
     private string _cpuName = string.Empty;
     private double _cpuPercent;
     private string _cpuText = "—";
+    private string _cpuTemperatureText = string.Empty;
     private double _ramPercent;
     private string _ramText = "—";
     private bool _isThemePanelOpen;
@@ -85,6 +86,19 @@ public sealed class MainViewModel : ObservableObject
         private set => SetProperty(ref _cpuText, value);
     }
 
+    /// <summary>Température du processeur ("62 °C"), vide si indisponible (pas de pilote ou pas de droits).</summary>
+    public string CpuTemperatureText
+    {
+        get => _cpuTemperatureText;
+        private set
+        {
+            if (SetProperty(ref _cpuTemperatureText, value))
+                OnPropertyChanged(nameof(HasCpuTemperature));
+        }
+    }
+
+    public bool HasCpuTemperature => CpuTemperatureText.Length > 0;
+
     public double RamPercent
     {
         get => _ramPercent;
@@ -105,6 +119,7 @@ public sealed class MainViewModel : ObservableObject
         CpuVendor = snapshot.Cpu.Vendor;
         CpuPercent = snapshot.CpuPercent;
         CpuText = $"{snapshot.CpuPercent:0} %";
+        CpuTemperatureText = snapshot.CpuTemperatureC is double temp ? $"{temp:0} °C" : string.Empty;
 
         RamPercent = snapshot.RamPercent;
         RamText = $"{snapshot.RamUsedGb:0.0} / {snapshot.RamTotalGb:0} Go";

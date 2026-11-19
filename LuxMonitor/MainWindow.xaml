@@ -123,6 +123,8 @@
                         </TextBlock>
                         <TextBlock Text="{Binding CpuText}" Style="{StaticResource TileValue}"/>
                         <ProgressBar Style="{StaticResource Gauge}" Value="{Binding CpuPercent, Mode=OneWay}"/>
+                        <TextBlock Text="{Binding CpuTemperatureText}" Style="{StaticResource TileDetail}"
+                                   Visibility="{Binding HasCpuTemperature, Converter={StaticResource BoolToVisibility}}"/>
                     </StackPanel>
                 </Button>
 
@@ -196,7 +198,11 @@
                     <StackPanel>
                         <Grid>
                             <TextBlock Text="CPU" Style="{StaticResource CompactLabel}"/>
-                            <TextBlock Text="{Binding CpuText}" Style="{StaticResource CompactValue}"/>
+                            <TextBlock Style="{StaticResource CompactValue}">
+                                <Run Text="{Binding CpuTemperatureText, Mode=OneWay}"
+                                     Foreground="{DynamicResource MutedTextBrush}"/>
+                                <Run Text="{Binding CpuText, Mode=OneWay}"/>
+                            </TextBlock>
                         </Grid>
                         <ProgressBar Style="{StaticResource GaugeThin}" Value="{Binding CpuPercent, Mode=OneWay}"/>
                     </StackPanel>

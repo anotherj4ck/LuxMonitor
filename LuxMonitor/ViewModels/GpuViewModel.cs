@@ -71,12 +71,17 @@ public sealed class GpuViewModel : ObservableObject
         if (snapshot.MemoryUsedGb is double used && snapshot.MemoryTotalGb is double total && total > 0)
             parts.Add(string.Format(French, "{0:0.0} / {1:0} Go VRAM", used, total));
 
-        Detail = parts.Count > 0 ? string.Join("  ·  ", parts) : "Capteurs non disponibles";
+        // Un GPU intégré (Intel) n'a ni température ni mémoire dédiée : c'est normal, on le dit clairement.
+        string fallback = Vendor == GpuVendor.Intel ? "Graphique intégré · mémoire partagée" : "Capteurs non disponibles";
+        Detail = parts.Count > 0 ? string.Join("  ·  ", parts) : fallback;
     }
 
     /// <summary>"NVIDIA GeForce RTX 4060 Laptop GPU" devient "RTX 4060 Laptop" : la tuile reste lisible.</summary>
     private static string ShortenName(string name)
-        => name.Replace("NVIDIA GeForce ", "")
+        => name.Replace("(R)", "")
+               .Replace("(TM)", "")
+               .Replace("Intel ", "")
+               .Replace("NVIDIA GeForce ", "")
                .Replace("NVIDIA ", "")
                .Replace("AMD Radeon ", "Radeon ")
                .Replace(" GPU", "")

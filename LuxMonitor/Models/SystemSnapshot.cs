@@ -48,6 +48,7 @@ public sealed record GpuSnapshot(
 public sealed record SystemSnapshot(
     CpuInfo Cpu,
     double CpuPercent,
+    double? CpuTemperatureC,
     double RamUsedGb,
     double RamTotalGb,
     IReadOnlyList<GpuSnapshot> Gpus,

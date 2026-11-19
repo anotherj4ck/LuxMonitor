@@ -8,7 +8,7 @@ namespace LuxMonitor.Sensors;
 /// <summary>
 /// Lit les vraies mesures de Windows, sans pilote et sans droits administrateur.
 /// CPU et RAM passent par deux fonctions de kernel32.dll (API Windows native),
-/// les disques par DriveInfo (.NET), les GPU par LibreHardwareMonitor (voir GpuReader).
+/// les disques par DriveInfo (.NET), les GPU et la température CPU par LibreHardwareMonitor (voir HardwareReader).
 /// </summary>
 public sealed class WindowsSensorProvider : ISensorProvider
 {
@@ -18,7 +18,7 @@ public sealed class WindowsSensorProvider : ISensorProvider
     private long _prevIdle, _prevKernel, _prevUser;
     private bool _hasPrevious;
 
-    private readonly GpuReader _gpuReader = new();
+    private readonly HardwareReader _hardware = new();
 
     // L'identité du processeur ne change pas : on la lit une seule fois.
     private readonly CpuInfo _cpu = ReadCpuInfo();
@@ -26,10 +26,44 @@ public sealed class WindowsSensorProvider : ISensorProvider
     public SystemSnapshot Read()
     {
         var (ramUsed, ramTotal) = ReadRam();
-        return new SystemSnapshot(_cpu, ReadCpuPercent(), ramUsed, ramTotal, _gpuReader.Read(), ReadDisks());
+        _hardware.Update(); // Une seule mise à jour des capteurs par rafraîchissement.
+        WriteDiagnosticOnce();
+
+        return new SystemSnapshot(
+            _cpu,
+            ReadCpuPercent(),
+            _hardware.ReadCpuTemperature(),
+            ramUsed,
+            ramTotal,
+            _hardware.ReadGpus(),
+            ReadDisks());
     }
 
-    public void Dispose() => _gpuReader.Dispose();
+    public void Dispose() => _hardware.Dispose();
+
+    private bool _diagnosticWritten;
+
+    /// <summary>
+    /// En mode Debug uniquement : écrit la liste des capteurs dans "diagnostic-capteurs.txt",
+    /// à côté de l'exe, au premier rafraîchissement. Rien n'est écrit dans la version publiée.
+    /// </summary>
+    [System.Diagnostics.Conditional("DEBUG")]
+    private void WriteDiagnosticOnce()
+    {
+        if (_diagnosticWritten)
+            return;
+        _diagnosticWritten = true;
+
+        try
+        {
+            string path = Path.Combine(AppContext.BaseDirectory, "diagnostic-capteurs.txt");
+            File.WriteAllText(path, _hardware.BuildDiagnosticReport());
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Diagnostic facultatif : on ignore les erreurs d'écriture.
+        }
+    }
 
     private double ReadCpuPercent()
     {

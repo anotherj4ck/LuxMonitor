@@ -14,6 +14,7 @@ public sealed class DemoSensorProvider : ISensorProvider
     private double _ramUsed = 9.5;
     private double _gpuLoad = 35;
     private double _gpuTemp = 52;
+    private double _cpuTemp = 55;
 
     public SystemSnapshot Read()
     {
@@ -22,8 +23,9 @@ public sealed class DemoSensorProvider : ISensorProvider
         _ramUsed = Drift(_ramUsed, 0.4, 6, 20);
         _gpuLoad = Drift(_gpuLoad, 15, 0, 99);
         _gpuTemp = Drift(_gpuTemp, 1.5, 38, 82);
+        _cpuTemp = Drift(_cpuTemp, 2, 40, 90);
 
-        return new SystemSnapshot(new CpuInfo("Core i7-13620H", CpuVendor.Intel), _cpu, _ramUsed, 24,
+        return new SystemSnapshot(new CpuInfo("Core i7-13620H", CpuVendor.Intel), _cpu, _cpuTemp, _ramUsed, 24,
         [
             new GpuSnapshot("demo-gpu-0", "NVIDIA GeForce RTX 4060 Laptop GPU", GpuVendor.Nvidia,
                 _gpuLoad, _gpuTemp, 2.4, 8),
