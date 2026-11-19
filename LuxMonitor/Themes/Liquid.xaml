@@ -1,0 +1,41 @@
+<!--
+    Thème « Liquide » : verre discret posé sur le fond d'écran.
+    Un thème ne contient QUE des couleurs (pinceaux). Les formes sont dans Controls.xaml.
+    Pour créer un autre thème (Sombre, Clair...), on copie ce fichier
+    et on change les valeurs, sans toucher aux clés (x:Key).
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Texte -->
+    <SolidColorBrush x:Key="TextBrush" Color="#F2FFFFFF"/>
+    <SolidColorBrush x:Key="MutedTextBrush" Color="#A6FFFFFF"/>
+
+    <!-- Tuiles en verre : remplissage presque invisible -->
+    <SolidColorBrush x:Key="TileBackgroundBrush" Color="#12FFFFFF"/>
+    <SolidColorBrush x:Key="TileHoverBrush" Color="#22FFFFFF"/>
+    <SolidColorBrush x:Key="TilePressedBrush" Color="#30FFFFFF"/>
+
+    <!-- Bord lumineux : plus clair en haut à gauche et en bas à droite,
+         comme un reflet de lumière sur l'arête d'une plaque de verre -->
+    <LinearGradientBrush x:Key="TileBorderBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#66FFFFFF" Offset="0"/>
+        <GradientStop Color="#0FFFFFFF" Offset="0.45"/>
+        <GradientStop Color="#0FFFFFFF" Offset="0.6"/>
+        <GradientStop Color="#40FFFFFF" Offset="1"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="FocusBorderBrush" Color="#CCFFFFFF"/>
+
+    <!-- Jauges -->
+    <SolidColorBrush x:Key="GaugeTrackBrush" Color="#1FFFFFFF"/>
+    <LinearGradientBrush x:Key="GaugeFillBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#80FFFFFF" Offset="0"/>
+        <GradientStop Color="#F2FFFFFF" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- Badge DÉMO -->
+    <SolidColorBrush x:Key="BadgeBrush" Color="#33FFFFFF"/>
+
+    <!-- Fond de secours si l'effet Acrylic de Windows 11 n'est pas disponible -->
+    <SolidColorBrush x:Key="WindowFallbackBrush" Color="#E61C1F26"/>
+</ResourceDictionary>

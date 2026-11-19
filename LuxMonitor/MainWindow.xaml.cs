@@ -40,6 +40,16 @@ public partial class MainWindow : Window
         };
     }
 
+    // Appelé quand Windows a créé la fenêtre : c'est seulement à ce moment
+    // qu'on peut lui demander l'effet Acrylic. Sinon (Windows 10...), fond sombre de secours.
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+
+        if (!WindowEffects.TryApplyAcrylic(this))
+            SetResourceReference(BackgroundProperty, "WindowFallbackBrush");
+    }
+
     // La fenêtre n'a pas de barre de titre : on la déplace en cliquant n'importe où.
     private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {

@@ -7,186 +7,110 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
         Title="Lux Monitor"
-        Width="340" SizeToContent="Height"
-        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Width="320" SizeToContent="Height"
         ResizeMode="NoResize"
+        Background="Transparent"
+        FontFamily="Segoe UI Variable Display, Segoe UI"
+        Foreground="{DynamicResource TextBrush}"
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
 
+    <!-- Pas de barre de titre Windows, mais une vraie fenêtre (compatible avec l'effet Acrylic).
+         L'ancien mode AllowsTransparency était incompatible avec les effets de Windows 11. -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome GlassFrameThickness="-1" CaptionHeight="0"
+                      ResizeBorderThickness="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
     <Window.Resources>
-        <!-- Palette : blanc chaud, beige, accent jaune -->
-        <SolidColorBrush x:Key="SurfaceBrush" Color="#F2FFFDF8"/>
-        <SolidColorBrush x:Key="TileBrush" Color="#B3FFFFFF"/>
-        <SolidColorBrush x:Key="TileHoverBrush" Color="#FFFFF6DF"/>
-        <SolidColorBrush x:Key="CardBorderBrush" Color="#33C9A227"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#E0B43A"/>
-        <SolidColorBrush x:Key="TextBrush" Color="#2B2620"/>
-        <SolidColorBrush x:Key="MutedTextBrush" Color="#8A7F70"/>
-
         <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
-
-        <!-- Une tuile = un bouton : cliquable à la souris ET au clavier (Tab + Entrée). -->
-        <Style x:Key="TileButton" TargetType="Button">
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Margin" Value="0,0,0,8"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Card"
-                                Background="{StaticResource TileBrush}"
-                                BorderBrush="{StaticResource CardBorderBrush}"
-                                BorderThickness="1" CornerRadius="12" Padding="12,10">
-                            <ContentPresenter HorizontalAlignment="Stretch"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Card" Property="Background" Value="{StaticResource TileHoverBrush}"/>
-                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Jauge fine aux bords arrondis -->
-        <Style x:Key="Gauge" TargetType="ProgressBar">
-            <Setter Property="Height" Value="6"/>
-            <Setter Property="Minimum" Value="0"/>
-            <Setter Property="Maximum" Value="100"/>
-            <Setter Property="Margin" Value="0,8,0,0"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ProgressBar">
-                        <Grid>
-                            <Border x:Name="PART_Track" CornerRadius="3" Background="#1A2B2620"/>
-                            <Border x:Name="PART_Indicator" CornerRadius="3" HorizontalAlignment="Left"
-                                    Background="{StaticResource AccentBrush}"/>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="TileTitle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-        </Style>
-
-        <Style x:Key="TileValue" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="HorizontalAlignment" Value="Right"/>
-        </Style>
     </Window.Resources>
 
-    <Border Margin="14" Padding="16" CornerRadius="18"
-            Background="{StaticResource SurfaceBrush}"
-            BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1">
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="22" ShadowDepth="0" Opacity="0.22"/>
-        </Border.Effect>
+    <StackPanel Margin="14,12,14,4">
 
-        <StackPanel TextElement.Foreground="{StaticResource TextBrush}">
+        <!-- En-tête -->
+        <Grid Margin="4,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-            <!-- En-tête : nom, badge démo, fermer -->
-            <Grid Margin="0,0,0,12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Lux" FontSize="16" FontWeight="SemiBold"/>
+                <TextBlock Text=" Monitor" FontSize="16" FontWeight="Light"
+                           Foreground="{DynamicResource MutedTextBrush}"/>
+                <Border Margin="10,0,0,0" Padding="7,1" CornerRadius="8" VerticalAlignment="Center"
+                        Background="{DynamicResource BadgeBrush}"
+                        Visibility="{Binding IsDemo, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="DÉMO" FontSize="10" FontWeight="SemiBold"/>
+                </Border>
+            </StackPanel>
 
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Lux Monitor" FontSize="16" FontWeight="Bold"/>
-                    <Border Margin="8,0,0,0" Padding="6,1" CornerRadius="6" Background="{StaticResource AccentBrush}"
-                            Visibility="{Binding IsDemo, Converter={StaticResource BoolToVisibility}}">
-                        <TextBlock Text="DÉMO" FontSize="10" FontWeight="Bold" Foreground="White"/>
-                    </Border>
-                </StackPanel>
+            <Button Grid.Column="1" Style="{StaticResource IconButton}"
+                    Content="✕" Click="Close_Click" ToolTip="Fermer"/>
+        </Grid>
 
-                <Button Grid.Column="1" Content="✕" Click="Close_Click" ToolTip="Fermer"
-                        Width="28" Height="28" Background="Transparent" BorderThickness="0"
-                        Foreground="{StaticResource MutedTextBrush}" Cursor="Hand"/>
-            </Grid>
+        <!-- Processeur -->
+        <Button Style="{StaticResource TileButton}" Click="Cpu_Click"
+                ToolTip="Ouvrir le Gestionnaire des tâches">
+            <StackPanel>
+                <TextBlock Text="Processeur" Style="{StaticResource TileLabel}"/>
+                <TextBlock Text="{Binding CpuText}" Style="{StaticResource TileValue}"/>
+                <ProgressBar Style="{StaticResource Gauge}" Value="{Binding CpuPercent, Mode=OneWay}"/>
+            </StackPanel>
+        </Button>
 
-            <!-- CPU -->
-            <Button Style="{StaticResource TileButton}" Click="Cpu_Click"
-                    ToolTip="Ouvrir le Gestionnaire des tâches">
-                <StackPanel>
-                    <Grid>
-                        <TextBlock Text="Processeur" Style="{StaticResource TileTitle}"/>
-                        <TextBlock Text="{Binding CpuText}" Style="{StaticResource TileValue}"/>
-                    </Grid>
-                    <ProgressBar Style="{StaticResource Gauge}" Value="{Binding CpuPercent, Mode=OneWay}"/>
-                </StackPanel>
-            </Button>
+        <!-- Cartes graphiques -->
+        <ItemsControl ItemsSource="{Binding Gpus}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type vm:GpuViewModel}">
+                    <Button Style="{StaticResource TileButton}" Click="Gpu_Click"
+                            ToolTip="Ouvrir le logiciel de la carte graphique">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource TileLabel}">
+                                <Run Text="Carte graphique  ·  "/>
+                                <Run Text="{Binding Name, Mode=OneWay}"/>
+                            </TextBlock>
+                            <TextBlock Text="{Binding LoadText}" Style="{StaticResource TileValue}"/>
+                            <ProgressBar Style="{StaticResource Gauge}" Value="{Binding LoadPercent, Mode=OneWay}"/>
+                            <TextBlock Text="{Binding Detail}" Style="{StaticResource TileDetail}"/>
+                        </StackPanel>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
 
-            <!-- Cartes graphiques (une tuile par GPU : un portable peut en avoir deux) -->
-            <ItemsControl ItemsSource="{Binding Gpus}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type vm:GpuViewModel}">
-                        <Button Style="{StaticResource TileButton}" Click="Gpu_Click"
-                                ToolTip="Ouvrir le logiciel de la carte graphique">
-                            <StackPanel>
-                                <Grid>
-                                    <TextBlock Style="{StaticResource TileTitle}">
-                                        <Run Text="GPU"/>
-                                        <Run Text="{Binding Name, Mode=OneWay}" FontWeight="Normal"
-                                             Foreground="{StaticResource MutedTextBrush}"/>
-                                    </TextBlock>
-                                    <TextBlock Text="{Binding LoadText}" Style="{StaticResource TileValue}"/>
-                                </Grid>
-                                <ProgressBar Style="{StaticResource Gauge}" Value="{Binding LoadPercent, Mode=OneWay}"/>
-                                <TextBlock Text="{Binding Detail}" Margin="0,6,0,0" FontSize="12"
-                                           Foreground="{StaticResource MutedTextBrush}"/>
-                            </StackPanel>
-                        </Button>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+        <!-- Mémoire -->
+        <Button Style="{StaticResource TileButton}" Click="Ram_Click"
+                ToolTip="Ouvrir le Gestionnaire des tâches">
+            <StackPanel>
+                <TextBlock Text="Mémoire" Style="{StaticResource TileLabel}"/>
+                <TextBlock Text="{Binding RamText}" Style="{StaticResource TileValue}"/>
+                <ProgressBar Style="{StaticResource Gauge}" Value="{Binding RamPercent, Mode=OneWay}"/>
+            </StackPanel>
+        </Button>
 
-            <!-- RAM -->
-            <Button Style="{StaticResource TileButton}" Click="Ram_Click"
-                    ToolTip="Ouvrir le Gestionnaire des tâches">
-                <StackPanel>
-                    <Grid>
-                        <TextBlock Text="Mémoire" Style="{StaticResource TileTitle}"/>
-                        <TextBlock Text="{Binding RamText}" Style="{StaticResource TileValue}"/>
-                    </Grid>
-                    <ProgressBar Style="{StaticResource Gauge}" Value="{Binding RamPercent, Mode=OneWay}"/>
-                </StackPanel>
-            </Button>
+        <!-- Disques -->
+        <TextBlock Text="DISQUES" Style="{StaticResource SectionTitle}"/>
 
-            <!-- Disques -->
-            <TextBlock Text="DISQUES" Margin="4,6,0,8" FontSize="11" FontWeight="SemiBold"
-                       Foreground="{StaticResource MutedTextBrush}"/>
-
-            <ItemsControl ItemsSource="{Binding Disks}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type vm:DiskViewModel}">
-                        <Button Style="{StaticResource TileButton}" Click="Disk_Click"
-                                ToolTip="Ouvrir dans l'Explorateur de fichiers">
-                            <StackPanel>
-                                <Grid>
-                                    <TextBlock Style="{StaticResource TileTitle}">
-                                        <Run Text="{Binding Title, Mode=OneWay}"/>
-                                        <Run Text="{Binding Label, Mode=OneWay}" FontWeight="Normal"
-                                             Foreground="{StaticResource MutedTextBrush}"/>
-                                    </TextBlock>
-                                    <TextBlock Text="{Binding UsedPercent, StringFormat={}{0:0} %}"
-                                               Style="{StaticResource TileValue}"/>
-                                </Grid>
-                                <ProgressBar Style="{StaticResource Gauge}" Value="{Binding UsedPercent, Mode=OneWay}"/>
-                                <TextBlock Text="{Binding Detail}" Margin="0,6,0,0" FontSize="12"
-                                           Foreground="{StaticResource MutedTextBrush}"/>
-                            </StackPanel>
-                        </Button>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
-    </Border>
+        <ItemsControl ItemsSource="{Binding Disks}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type vm:DiskViewModel}">
+                    <Button Style="{StaticResource TileButton}" Click="Disk_Click"
+                            ToolTip="Ouvrir dans l'Explorateur de fichiers">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource TileLabel}">
+                                <Run Text="{Binding Title, Mode=OneWay}"/>
+                                <Run Text="  ·  "/>
+                                <Run Text="{Binding Label, Mode=OneWay}"/>
+                            </TextBlock>
+                            <TextBlock Text="{Binding UsedPercent, StringFormat={}{0:0} %}"
+                                       Style="{StaticResource TileValue}"/>
+                            <ProgressBar Style="{StaticResource Gauge}" Value="{Binding UsedPercent, Mode=OneWay}"/>
+                            <TextBlock Text="{Binding Detail}" Style="{StaticResource TileDetail}"/>
+                        </StackPanel>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
 </Window>
