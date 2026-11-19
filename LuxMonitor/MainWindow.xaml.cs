@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using LuxMonitor.Models;
 using LuxMonitor.Sensors;
 using LuxMonitor.Services;
 using LuxMonitor.ViewModels;
@@ -12,6 +13,7 @@ public partial class MainWindow : Window
     private readonly ISensorProvider _provider;
     private readonly MainViewModel _viewModel;
     private readonly DispatcherTimer _timer;
+    private readonly AppSettings _settings = SettingsService.Load();
 
     public MainWindow()
     {
@@ -40,14 +42,35 @@ public partial class MainWindow : Window
         };
     }
 
-    // Appelé quand Windows a créé la fenêtre : c'est seulement à ce moment
-    // qu'on peut lui demander l'effet Acrylic. Sinon (Windows 10...), fond sombre de secours.
+    // Appelé quand Windows a créé la fenêtre, juste avant le premier affichage :
+    // on applique le thème enregistré ici pour éviter un flash de l'ancien thème.
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
 
-        if (!WindowEffects.TryApplyAcrylic(this))
-            SetResourceReference(BackgroundProperty, "WindowFallbackBrush");
+        WindowEffects.Prepare(this);
+        ApplyTheme(ThemeManager.FindOrDefault(_settings.ThemeId));
+    }
+
+    private void ApplyTheme(ThemeDefinition theme)
+    {
+        ThemeManager.Apply(this, theme);
+        _viewModel.SetActiveTheme(theme.Id);
+    }
+
+    private void ThemeButton_Click(object sender, RoutedEventArgs e)
+        => _viewModel.IsThemePanelOpen = !_viewModel.IsThemePanelOpen;
+
+    private void ThemeOption_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { DataContext: ThemeOptionViewModel option })
+            return;
+
+        ApplyTheme(option.Theme);
+        _viewModel.IsThemePanelOpen = false;
+
+        _settings.ThemeId = option.Theme.Id;
+        SettingsService.Save(_settings);
     }
 
     // La fenêtre n'a pas de barre de titre : on la déplace en cliquant n'importe où.

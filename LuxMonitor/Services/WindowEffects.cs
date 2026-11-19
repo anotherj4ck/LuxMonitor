@@ -18,6 +18,7 @@ public static class WindowEffects
     private const int DwmwaSystemBackdropType = 38;
 
     private const int DwmwcpRound = 2;              // Coins arrondis
+    private const int DwmsbtNone = 1;               // Pas d'effet
     private const int DwmsbtTransientWindow = 3;    // Acrylic
 
     private const int GwlStyle = -16;
@@ -25,28 +26,20 @@ public static class WindowEffects
 
     private const int Windows11_22H2Build = 22621;
 
-    /// <summary>Acrylic documenté. Renvoie false si indisponible (Windows 10, ancienne version de Windows 11...).</summary>
-    public static bool TryApplyAcrylic(Window window)
+    /// <summary>
+    /// Préparation, une seule fois à la création de la fenêtre :
+    /// coins arrondis, pas de boutons système, surface prête à recevoir un effet.
+    /// </summary>
+    public static void Prepare(Window window)
     {
-        if (!TryPrepare(window, out IntPtr hwnd))
-            return false;
-
-        return SetAttribute(hwnd, DwmwaSystemBackdropType, DwmsbtTransientWindow) == 0;
-    }
-
-    /// <summary>Préparation de la fenêtre avant d'appliquer l'effet.</summary>
-    private static bool TryPrepare(Window window, out IntPtr hwnd)
-    {
-        hwnd = new WindowInteropHelper(window).Handle;
-        if (hwnd == IntPtr.Zero || Environment.OSVersion.Version.Build < Windows11_22H2Build)
-            return false;
+        IntPtr hwnd = new WindowInteropHelper(window).Handle;
+        if (hwnd == IntPtr.Zero)
+            return;
 
         // Retire les boutons système (réduire, agrandir, fermer) que Windows dessinerait par-dessus notre contenu.
         int style = GetWindowLong(hwnd, GwlStyle);
         SetWindowLong(hwnd, GwlStyle, style & ~WsSysMenu);
 
-        // Mode sombre + coins arrondis.
-        SetAttribute(hwnd, DwmwaUseImmersiveDarkMode, 1);
         SetAttribute(hwnd, DwmwaWindowCornerPreference, DwmwcpRound);
 
         // WPF peint normalement un fond opaque : on le rend transparent pour laisser voir l'effet,
@@ -56,8 +49,27 @@ public static class WindowEffects
 
         var margins = new Margins { Left = -1, Right = -1, Top = -1, Bottom = -1 };
         DwmExtendFrameIntoClientArea(hwnd, ref margins);
+    }
 
-        return true;
+    /// <summary>
+    /// Active ou désactive l'effet Acrylic, en teinte sombre ou claire.
+    /// Peut être appelé à tout moment (changement de thème).
+    /// Renvoie true si l'Acrylic est effectivement actif.
+    /// </summary>
+    public static bool SetBackdrop(Window window, bool useAcrylic, bool isDark)
+    {
+        IntPtr hwnd = new WindowInteropHelper(window).Handle;
+        if (hwnd == IntPtr.Zero)
+            return false;
+
+        SetAttribute(hwnd, DwmwaUseImmersiveDarkMode, isDark ? 1 : 0);
+
+        if (Environment.OSVersion.Version.Build < Windows11_22H2Build)
+            return false;
+
+        int backdrop = useAcrylic ? DwmsbtTransientWindow : DwmsbtNone;
+        bool succeeded = SetAttribute(hwnd, DwmwaSystemBackdropType, backdrop) == 0;
+        return useAcrylic && succeeded;
     }
 
     private static int SetAttribute(IntPtr hwnd, int attribute, int value)

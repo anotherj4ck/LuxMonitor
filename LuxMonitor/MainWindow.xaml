@@ -45,9 +45,60 @@
                 </Border>
             </StackPanel>
 
-            <Button Grid.Column="1" Style="{StaticResource IconButton}"
-                    Content="✕" Click="Close_Click" ToolTip="Fermer"/>
+            <!-- Icônes : police Segoe Fluent Icons, intégrée à Windows 11 -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Style="{StaticResource IconButton}" Click="ThemeButton_Click" ToolTip="Changer de thème"
+                        FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Content="&#xE790;" Margin="0,0,6,0"/>
+                <Button Style="{StaticResource IconButton}" Click="Close_Click" ToolTip="Fermer"
+                        FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10" Content="&#xE8BB;"/>
+            </StackPanel>
         </Grid>
+
+        <!-- Panneau des thèmes (caché par défaut) -->
+        <Border Style="{StaticResource RevealPanel}" Margin="0,0,0,10" Padding="8,10,8,6" CornerRadius="18"
+                Background="{DynamicResource TileBackgroundBrush}"
+                BorderBrush="{DynamicResource TileBorderBrush}" BorderThickness="1"
+                Visibility="{Binding IsThemePanelOpen, Converter={StaticResource BoolToVisibility}}">
+            <Border.RenderTransform>
+                <TranslateTransform/>
+            </Border.RenderTransform>
+
+            <StackPanel>
+                <TextBlock Text="THÈME" Style="{StaticResource SectionTitle}" Margin="8,0,0,6"/>
+
+                <ItemsControl ItemsSource="{Binding ThemeOptions}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="1"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:ThemeOptionViewModel}">
+                            <Button Style="{StaticResource ThemeOptionButton}" Click="ThemeOption_Click"
+                                    ToolTip="{Binding Name}">
+                                <StackPanel>
+                                    <!-- Aperçu : fond du thème + petite jauge à sa couleur d'accent -->
+                                    <Grid Width="58" Height="40">
+                                        <Border CornerRadius="12" BorderThickness="1"
+                                                Background="{Binding PreviewBackground}"
+                                                BorderBrush="{DynamicResource TileBorderBrush}"/>
+                                        <Border Width="26" Height="4" CornerRadius="2" VerticalAlignment="Bottom"
+                                                Margin="0,0,0,9" Background="{Binding PreviewAccent}"/>
+                                        <TextBlock Text="&#xE73E;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                                   FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                   Margin="0,5,7,0" Foreground="{Binding PreviewAccent}"
+                                                   Visibility="{Binding IsActive, Converter={StaticResource BoolToVisibility}}"/>
+                                    </Grid>
+                                    <TextBlock Text="{Binding Name}" FontSize="12" Margin="0,6,0,0"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
 
         <!-- Processeur -->
         <Button Style="{StaticResource TileButton}" Click="Cpu_Click"

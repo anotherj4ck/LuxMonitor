@@ -36,6 +36,9 @@
     <!-- Badge DÉMO -->
     <SolidColorBrush x:Key="BadgeBrush" Color="#33FFFFFF"/>
 
+    <!-- Fond de la fenêtre : transparent pour laisser voir l'effet Acrylic -->
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="Transparent"/>
+
     <!-- Fond de secours si l'effet Acrylic de Windows 11 n'est pas disponible -->
     <SolidColorBrush x:Key="WindowFallbackBrush" Color="#E61C1F26"/>
 </ResourceDictionary>

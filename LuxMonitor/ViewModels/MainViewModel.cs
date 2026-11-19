@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using LuxMonitor.Models;
 using LuxMonitor.Sensors;
+using LuxMonitor.Services;
 
 namespace LuxMonitor.ViewModels;
 
@@ -16,6 +17,7 @@ public sealed class MainViewModel : ObservableObject
     private string _cpuText = "—";
     private double _ramPercent;
     private string _ramText = "—";
+    private bool _isThemePanelOpen;
 
     public MainViewModel(ISensorProvider provider, bool isDemo)
     {
@@ -24,6 +26,23 @@ public sealed class MainViewModel : ObservableObject
     }
 
     public bool IsDemo { get; }
+
+    /// <summary>Pastilles du panneau des thèmes.</summary>
+    public IReadOnlyList<ThemeOptionViewModel> ThemeOptions { get; } =
+        ThemeManager.Themes.Select(theme => new ThemeOptionViewModel(theme)).ToList();
+
+    public bool IsThemePanelOpen
+    {
+        get => _isThemePanelOpen;
+        set => SetProperty(ref _isThemePanelOpen, value);
+    }
+
+    /// <summary>Place la coche sur le thème actif.</summary>
+    public void SetActiveTheme(string themeId)
+    {
+        foreach (ThemeOptionViewModel option in ThemeOptions)
+            option.IsActive = option.Theme.Id == themeId;
+    }
 
     public ObservableCollection<GpuViewModel> Gpus { get; } = [];
 
