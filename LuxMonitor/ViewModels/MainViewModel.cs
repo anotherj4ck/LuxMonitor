@@ -13,6 +13,7 @@ public sealed class MainViewModel : ObservableObject
 {
     private readonly ISensorProvider _provider;
 
+    private string _cpuName = string.Empty;
     private double _cpuPercent;
     private string _cpuText = "—";
     private double _ramPercent;
@@ -48,6 +49,15 @@ public sealed class MainViewModel : ObservableObject
 
     public ObservableCollection<DiskViewModel> Disks { get; } = [];
 
+    /// <summary>Fabricant du processeur : sert à choisir quel outil ouvrir au clic.</summary>
+    public CpuVendor CpuVendor { get; private set; }
+
+    public string CpuName
+    {
+        get => _cpuName;
+        private set => SetProperty(ref _cpuName, value);
+    }
+
     public double CpuPercent
     {
         get => _cpuPercent;
@@ -76,6 +86,8 @@ public sealed class MainViewModel : ObservableObject
     {
         SystemSnapshot snapshot = _provider.Read();
 
+        CpuName = snapshot.Cpu.Name;
+        CpuVendor = snapshot.Cpu.Vendor;
         CpuPercent = snapshot.CpuPercent;
         CpuText = $"{snapshot.CpuPercent:0} %";
 

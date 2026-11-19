@@ -82,7 +82,7 @@ public partial class MainWindow : Window
 
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
 
-    private void Cpu_Click(object sender, RoutedEventArgs e) => Launcher.OpenTaskManager();
+    private void Cpu_Click(object sender, RoutedEventArgs e) => Launcher.OpenCpuTool(_viewModel.CpuVendor);
 
     private void Gpu_Click(object sender, RoutedEventArgs e)
     {

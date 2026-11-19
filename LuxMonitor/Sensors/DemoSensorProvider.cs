@@ -23,7 +23,7 @@ public sealed class DemoSensorProvider : ISensorProvider
         _gpuLoad = Drift(_gpuLoad, 15, 0, 99);
         _gpuTemp = Drift(_gpuTemp, 1.5, 38, 82);
 
-        return new SystemSnapshot(_cpu, _ramUsed, 24,
+        return new SystemSnapshot(new CpuInfo("Core i7-13620H", CpuVendor.Intel), _cpu, _ramUsed, 24,
         [
             new GpuSnapshot("demo-gpu-0", "NVIDIA GeForce RTX 4060 Laptop GPU", GpuVendor.Nvidia,
                 _gpuLoad, _gpuTemp, 2.4, 8),

@@ -36,6 +36,46 @@ public static class Launcher
             OpenTaskManager();
     }
 
+    /// <summary>
+    /// Ouvre l'outil de mise à jour du fabricant du processeur :
+    /// le logiciel s'il est installé, sinon la page officielle de détection des pilotes.
+    /// </summary>
+    public static void OpenCpuTool(CpuVendor vendor)
+    {
+        string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+        string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+
+        switch (vendor)
+        {
+            case CpuVendor.Intel:
+                // Intel Driver & Support Assistant : au lancement, il ouvre son tableau de bord dans le navigateur.
+                StartFirstExisting(
+                    [Path.Combine(programFilesX86, "Intel", "Driver and Support Assistant", "DSATray.exe")],
+                    fallbackUrl: "https://www.intel.com/content/www/us/en/support/detect.html");
+                break;
+
+            case CpuVendor.Amd:
+                // AMD Software (Adrenalin) gère aussi les pilotes de chipset Ryzen.
+                StartFirstExisting(
+                    [Path.Combine(programFiles, "AMD", "CNext", "CNext", "RadeonSoftware.exe")],
+                    fallbackUrl: "https://www.amd.com/en/support/download/drivers.html");
+                break;
+
+            default:
+                OpenTaskManager();
+                break;
+        }
+    }
+
+    /// <summary>Lance le premier programme trouvé ; sinon ouvre la page web officielle dans le navigateur.</summary>
+    private static void StartFirstExisting(string[] candidates, string fallbackUrl)
+    {
+        string? program = candidates.FirstOrDefault(File.Exists);
+
+        // Adresse écrite en dur dans le code, en https : on ne lance jamais une URL venue de l'extérieur.
+        Start(program ?? fallbackUrl);
+    }
+
     private static string? FindGpuTool(GpuVendor vendor)
     {
         string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);

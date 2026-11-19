@@ -102,9 +102,12 @@
 
         <!-- Processeur -->
         <Button Style="{StaticResource TileButton}" Click="Cpu_Click"
-                ToolTip="Ouvrir le Gestionnaire des tâches">
+                ToolTip="Rechercher les mises à jour du processeur">
             <StackPanel>
-                <TextBlock Text="Processeur" Style="{StaticResource TileLabel}"/>
+                <TextBlock Style="{StaticResource TileLabel}">
+                    <Run Text="Processeur  ·  "/>
+                    <Run Text="{Binding CpuName, Mode=OneWay}"/>
+                </TextBlock>
                 <TextBlock Text="{Binding CpuText}" Style="{StaticResource TileValue}"/>
                 <ProgressBar Style="{StaticResource Gauge}" Value="{Binding CpuPercent, Mode=OneWay}"/>
             </StackPanel>

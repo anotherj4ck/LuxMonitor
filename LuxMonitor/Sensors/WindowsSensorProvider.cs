@@ -1,5 +1,6 @@
 using System.IO;
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
 using LuxMonitor.Models;
 
 namespace LuxMonitor.Sensors;
@@ -19,10 +20,13 @@ public sealed class WindowsSensorProvider : ISensorProvider
 
     private readonly GpuReader _gpuReader = new();
 
+    // L'identité du processeur ne change pas : on la lit une seule fois.
+    private readonly CpuInfo _cpu = ReadCpuInfo();
+
     public SystemSnapshot Read()
     {
         var (ramUsed, ramTotal) = ReadRam();
-        return new SystemSnapshot(ReadCpuPercent(), ramUsed, ramTotal, _gpuReader.Read(), ReadDisks());
+        return new SystemSnapshot(_cpu, ReadCpuPercent(), ramUsed, ramTotal, _gpuReader.Read(), ReadDisks());
     }
 
     public void Dispose() => _gpuReader.Dispose();
@@ -47,6 +51,56 @@ public sealed class WindowsSensorProvider : ISensorProvider
             return 0;
 
         return Math.Clamp((1.0 - (double)idleDelta / totalDelta) * 100.0, 0, 100);
+    }
+
+    /// <summary>
+    /// Nom commercial et fabricant du processeur, lus dans le registre (là où Windows les stocke au démarrage).
+    /// Lecture seule dans HKEY_LOCAL_MACHINE : pas besoin de droits administrateur.
+    /// </summary>
+    private static CpuInfo ReadCpuInfo()
+    {
+        try
+        {
+            using RegistryKey? key = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\CentralProcessor\0");
+
+            string name = key?.GetValue("ProcessorNameString") is string rawName ? ShortenCpuName(rawName) : "";
+
+            // Identifiant fabricant inscrit dans le processeur lui-même (instruction CPUID).
+            CpuVendor vendor = key?.GetValue("VendorIdentifier") switch
+            {
+                "GenuineIntel" => CpuVendor.Intel,
+                "AuthenticAMD" => CpuVendor.Amd,
+                _ => CpuVendor.Unknown,
+            };
+
+            return new CpuInfo(name, vendor);
+        }
+        catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+        {
+            return new CpuInfo("", CpuVendor.Unknown);
+        }
+    }
+
+    /// <summary>"13th Gen Intel(R) Core(TM) i7-13620H" devient "Core i7-13620H".</summary>
+    private static string ShortenCpuName(string name)
+    {
+        string[] noise =
+        [
+            "(R)", "(TM)", "(tm)", "Intel ", "AMD ", " Processor", " with Radeon Graphics",
+            "13th Gen ", "12th Gen ", "14th Gen ", "11th Gen ",
+        ];
+        foreach (string word in noise)
+            name = name.Replace(word, " ");
+
+        // Coupe ce qui suit le modèle : fréquence ("CPU @ 2.40GHz") ou graphique intégré ("w/ Radeon...").
+        foreach (string marker in new[] { " CPU", " w/" })
+        {
+            int at = name.IndexOf(marker, StringComparison.Ordinal);
+            if (at > 0)
+                name = name[..at];
+        }
+
+        return string.Join(' ', name.Split(' ', StringSplitOptions.RemoveEmptyEntries));
     }
 
     private static (double UsedGb, double TotalGb) ReadRam()

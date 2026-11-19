@@ -9,6 +9,16 @@ public sealed record DiskSnapshot(string RootPath, string Label, double TotalGb,
     public double UsedPercent => TotalGb <= 0 ? 0 : (TotalGb - FreeGb) / TotalGb * 100.0;
 }
 
+public enum CpuVendor
+{
+    Unknown,
+    Intel,
+    Amd,
+}
+
+/// <summary>Identité du processeur : ne change pas pendant l'exécution.</summary>
+public sealed record CpuInfo(string Name, CpuVendor Vendor);
+
 public enum GpuVendor
 {
     Nvidia,
@@ -36,6 +46,7 @@ public sealed record GpuSnapshot(
 /// et c'est tout ce que l'interface a besoin de connaître.
 /// </summary>
 public sealed record SystemSnapshot(
+    CpuInfo Cpu,
     double CpuPercent,
     double RamUsedGb,
     double RamTotalGb,
