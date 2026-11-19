@@ -34,6 +34,7 @@ public sealed class FpsMeter : IDisposable
     private static readonly HashSet<string> IgnoredProcesses = new(StringComparer.OrdinalIgnoreCase)
     {
         "explorer", "dwm", "LuxMonitor", "ShellExperienceHost", "StartMenuExperienceHost", "SearchHost",
+        "ShellHost", "TextInputHost", "LockApp",
     };
 
     // Fenêtre de calcul : on compte les images des 1 dernières secondes (horodatage ETW).
@@ -172,9 +173,10 @@ public sealed class FpsMeter : IDisposable
 
         RemoveOldProcesses();
 
-        // Si on clique sur Lux Monitor, on garde les FPS du jeu qui était au premier plan juste avant.
+        // Si on clique sur Lux Monitor, ou si on ouvre un élément de Windows (menu Démarrer avec la touche
+        // Windows, barre des tâches, bureau...), on garde les FPS du jeu qui était au premier plan juste avant.
         int processId = GetForegroundProcessId();
-        if (processId == 0 || processId == _ownProcessId)
+        if (processId == 0 || processId == _ownProcessId || IgnoredProcesses.Contains(GetProcessName(processId)))
             processId = _lastTargetProcessId;
         else
             _lastTargetProcessId = processId;
