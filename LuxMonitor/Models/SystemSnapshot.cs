@@ -19,6 +19,9 @@ public enum CpuVendor
 /// <summary>Identité du processeur : ne change pas pendant l'exécution.</summary>
 public sealed record CpuInfo(string Name, CpuVendor Vendor);
 
+/// <summary>Une barrette de RAM : fabricant (vide si inconnu) et capacité.</summary>
+public sealed record RamModule(string Manufacturer, double CapacityGb);
+
 public enum GpuVendor
 {
     Nvidia,
@@ -51,6 +54,7 @@ public sealed record SystemSnapshot(
     double? CpuTemperatureC,
     double RamUsedGb,
     double RamTotalGb,
+    IReadOnlyList<RamModule> RamModules,
     IReadOnlyList<GpuSnapshot> Gpus,
     IReadOnlyList<DiskSnapshot> Disks)
 {

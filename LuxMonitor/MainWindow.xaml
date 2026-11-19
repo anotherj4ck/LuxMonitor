@@ -148,13 +148,17 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <!-- Mémoire -->
+                <!-- RAM -->
                 <Button Style="{StaticResource TileButton}" Click="Ram_Click"
                         ToolTip="Ouvrir le Gestionnaire des tâches">
                     <StackPanel>
-                        <TextBlock Text="Mémoire" Style="{StaticResource TileLabel}"/>
+                        <TextBlock Text="RAM" Style="{StaticResource TileLabel}"/>
                         <TextBlock Text="{Binding RamText}" Style="{StaticResource TileValue}"/>
                         <ProgressBar Style="{StaticResource Gauge}" Value="{Binding RamPercent, Mode=OneWay}"/>
+                        <!-- Barrettes installées (fabricant + capacité), si Windows les connaît -->
+                        <TextBlock Text="{Binding RamModulesText}" Style="{StaticResource TileDetail}"
+                                   TextWrapping="Wrap"
+                                   Visibility="{Binding HasRamModules, Converter={StaticResource BoolToVisibility}}"/>
                     </StackPanel>
                 </Button>
 
@@ -230,7 +234,7 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <!-- Mémoire -->
+                <!-- RAM -->
                 <Button Style="{StaticResource CompactTileButton}" Click="Ram_Click"
                         ToolTip="{Binding RamText}">
                     <StackPanel>

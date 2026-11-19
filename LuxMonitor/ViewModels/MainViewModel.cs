@@ -19,6 +19,7 @@ public sealed class MainViewModel : ObservableObject
     private string _cpuTemperatureText = string.Empty;
     private double _ramPercent;
     private string _ramText = "—";
+    private string _ramModulesText = string.Empty;
     private bool _isThemePanelOpen;
     private bool _isCompact;
 
@@ -39,6 +40,19 @@ public sealed class MainViewModel : ObservableObject
         get => _isThemePanelOpen;
         set => SetProperty(ref _isThemePanelOpen, value);
     }
+
+    /// <summary>Détail des barrettes : "16 Go Samsung · 8 Go SK hynix" (vide si inconnu).</summary>
+    public string RamModulesText
+    {
+        get => _ramModulesText;
+        private set
+        {
+            if (SetProperty(ref _ramModulesText, value))
+                OnPropertyChanged(nameof(HasRamModules));
+        }
+    }
+
+    public bool HasRamModules => RamModulesText.Length > 0;
 
     /// <summary>Disposition miniature (widget étroit) : une ligne par élément.</summary>
     public bool IsCompact
@@ -123,8 +137,10 @@ public sealed class MainViewModel : ObservableObject
 
         RamPercent = snapshot.RamPercent;
         RamText = $"{snapshot.RamUsedGb:0.0} / {snapshot.RamTotalGb:0} Go";
+        RamModulesText = string.Join("  ·  ", snapshot.RamModules.Select(m =>
+            string.IsNullOrEmpty(m.Manufacturer) ? $"{m.CapacityGb:0} Go" : $"{m.CapacityGb:0} Go {m.Manufacturer}"));
 
-        Sync(Gpus, snapshot.Gpus,
+        Sync(Gpus, FilterIdleIntegratedGpus(snapshot.Gpus),
             snap => snap.Id, vm => vm.Id,
             snap => new GpuViewModel(snap.Id, snap.Vendor),
             (vm, snap) => vm.Update(snap));
@@ -133,6 +149,43 @@ public sealed class MainViewModel : ObservableObject
             snap => snap.RootPath, vm => vm.RootPath,
             snap => new DiskViewModel(snap.RootPath),
             (vm, snap) => vm.Update(snap));
+    }
+
+    // ---- GPU intégré : masqué quand il ne sert pas ----
+
+    // Charge au-dessus de laquelle le GPU intégré est considéré comme "utilisé".
+    private const double IntegratedGpuActiveLoad = 5;
+
+    // Délai avant de le masquer à nouveau : évite qu'il clignote à chaque petit pic d'activité.
+    private static readonly TimeSpan IntegratedGpuHideDelay = TimeSpan.FromSeconds(10);
+
+    private readonly Dictionary<string, DateTime> _integratedGpuLastActive = [];
+
+    /// <summary>
+    /// Sur un portable à deux GPU, le GPU intégré (Intel) est souvent au repos.
+    /// On ne l'affiche que s'il a été utilisé dans les 10 dernières secondes.
+    /// S'il n'y a pas de carte dédiée, il est le seul GPU : on l'affiche toujours.
+    /// Limite connue : les cartes dédiées Intel Arc sont vues comme "Intel" et suivent la même règle.
+    /// </summary>
+    private IReadOnlyList<GpuSnapshot> FilterIdleIntegratedGpus(IReadOnlyList<GpuSnapshot> gpus)
+    {
+        bool hasDedicatedGpu = gpus.Any(g => g.Vendor != GpuVendor.Intel);
+        if (!hasDedicatedGpu)
+            return gpus;
+
+        DateTime now = DateTime.UtcNow;
+
+        return gpus.Where(gpu =>
+        {
+            if (gpu.Vendor != GpuVendor.Intel)
+                return true;
+
+            if (gpu.LoadPercent >= IntegratedGpuActiveLoad)
+                _integratedGpuLastActive[gpu.Id] = now;
+
+            return _integratedGpuLastActive.TryGetValue(gpu.Id, out DateTime lastActive)
+                   && now - lastActive < IntegratedGpuHideDelay;
+        }).ToList();
     }
 
     /// <summary>

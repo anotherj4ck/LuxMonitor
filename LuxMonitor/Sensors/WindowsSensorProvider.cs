@@ -23,6 +23,9 @@ public sealed class WindowsSensorProvider : ISensorProvider
     // L'identité du processeur ne change pas : on la lit une seule fois.
     private readonly CpuInfo _cpu = ReadCpuInfo();
 
+    // Les barrettes de RAM ne changent pas pendant que le PC tourne : lecture unique.
+    private readonly IReadOnlyList<RamModule> _ramModules = RamModuleReader.Read();
+
     public SystemSnapshot Read()
     {
         var (ramUsed, ramTotal) = ReadRam();
@@ -35,6 +38,7 @@ public sealed class WindowsSensorProvider : ISensorProvider
             _hardware.ReadCpuTemperature(),
             ramUsed,
             ramTotal,
+            _ramModules,
             _hardware.ReadGpus(),
             ReadDisks());
     }
