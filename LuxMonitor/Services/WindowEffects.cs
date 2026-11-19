@@ -26,6 +26,13 @@ public static class WindowEffects
 
     private const int Windows11_22H2Build = 22621;
 
+    private const int WmNcActivate = 0x0086;
+
+    // Les fenêtres dont on a intercepté les messages. WPF ne garde qu'une référence "faible"
+    // vers les fonctions d'interception : sans cette liste, elles pourraient être supprimées
+    // par le ramasse-miettes (.NET) et l'effet disparaîtrait au bout d'un moment.
+    private static readonly List<HwndSourceHook> KeepAliveHooks = [];
+
     /// <summary>
     /// Préparation, une seule fois à la création de la fenêtre :
     /// coins arrondis, pas de boutons système, surface prête à recevoir un effet.
@@ -49,6 +56,34 @@ public static class WindowEffects
 
         var margins = new Margins { Left = -1, Right = -1, Top = -1, Bottom = -1 };
         DwmExtendFrameIntoClientArea(hwnd, ref margins);
+
+        KeepBackdropActive(hwnd);
+    }
+
+    /// <summary>
+    /// Par défaut, Windows 11 remplace l'effet Acrylic par un fond gris quand la fenêtre
+    /// n'a plus le focus (on a cliqué ailleurs). C'est logique pour une application classique,
+    /// mais un widget doit rester "liquide" en permanence.
+    ///
+    /// Windows décide de l'apparence "active / inactive" grâce au message WM_NCACTIVATE.
+    /// On l'intercepte et on répond toujours "active" : l'effet reste en place.
+    /// </summary>
+    private static void KeepBackdropActive(IntPtr hwnd)
+    {
+        if (HwndSource.FromHwnd(hwnd) is not { } source)
+            return;
+
+        HwndSourceHook hook = (IntPtr window, int message, IntPtr wParam, IntPtr lParam, ref bool handled) =>
+        {
+            if (message != WmNcActivate)
+                return IntPtr.Zero;
+
+            handled = true;
+            return DefWindowProc(window, message, new IntPtr(1), lParam); // 1 = "active"
+        };
+
+        source.AddHook(hook);
+        KeepAliveHooks.Add(hook);
     }
 
     /// <summary>
@@ -91,6 +126,9 @@ public static class WindowEffects
 
     [DllImport("dwmapi.dll")]
     private static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref Margins margins);
+
+    [DllImport("user32.dll", EntryPoint = "DefWindowProcW")]
+    private static extern IntPtr DefWindowProc(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll", EntryPoint = "GetWindowLongW")]
     private static extern int GetWindowLong(IntPtr hwnd, int index);
