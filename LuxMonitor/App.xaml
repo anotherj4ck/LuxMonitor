@@ -1,11 +1,11 @@
 <Application x:Class="LuxMonitor.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="MainWindow.xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Pas de StartupUri : la fenêtre est créée dans App.xaml.cs, après la vérification d'instance unique. -->
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!-- Thème actif (couleurs). Plus tard, c'est cette ligne qu'on changera en un clic. -->
+                <!-- Thème par défaut (couleurs). ThemeManager le remplace en direct quand on change de thème. -->
                 <ResourceDictionary Source="Themes/Liquid.xaml"/>
                 <!-- Formes communes à tous les thèmes -->
                 <ResourceDictionary Source="Themes/Controls.xaml"/>

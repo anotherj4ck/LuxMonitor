@@ -7,6 +7,13 @@ namespace LuxMonitor.Services;
 public sealed class AppSettings
 {
     public string ThemeId { get; set; } = "liquid";
+
+    /// <summary>Dernière position de la fenêtre (null = jamais déplacée).</summary>
+    public double? WindowLeft { get; set; }
+    public double? WindowTop { get; set; }
+
+    /// <summary>La bulle "Lux Monitor continue dans la zone de notification" a déjà été montrée.</summary>
+    public bool HasShownTrayHint { get; set; }
 }
 
 /// <summary>

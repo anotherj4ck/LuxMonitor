@@ -9,6 +9,8 @@
         Title="Lux Monitor"
         Width="320" SizeToContent="Height"
         ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Icon="/Assets/LuxMonitor.ico"
         Background="Transparent"
         FontFamily="Segoe UI Variable Display, Segoe UI"
         Foreground="{DynamicResource TextBrush}"
@@ -49,7 +51,7 @@
             <StackPanel Grid.Column="1" Orientation="Horizontal">
                 <Button Style="{StaticResource IconButton}" Click="ThemeButton_Click" ToolTip="Changer de thème"
                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Content="&#xE790;" Margin="0,0,6,0"/>
-                <Button Style="{StaticResource IconButton}" Click="Close_Click" ToolTip="Fermer"
+                <Button Style="{StaticResource IconButton}" Click="Close_Click" ToolTip="Masquer (Lux Monitor reste dans la zone de notification)"
                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10" Content="&#xE8BB;"/>
             </StackPanel>
         </Grid>

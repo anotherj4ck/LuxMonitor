@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -6,7 +6,24 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <!-- Windows Forms : uniquement pour l'icône de la zone de notification (NotifyIcon). -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <!-- Icône de l'exe (Explorateur, Gestionnaire des tâches...). -->
+    <ApplicationIcon>Assets\LuxMonitor.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <!-- WPF et Windows Forms ont des classes au même nom (Application, MessageBox, Button...).
+       On retire les "using" automatiques de Windows Forms pour éviter les conflits :
+       le seul fichier qui en a besoin (TrayIconService) les déclare lui-même. -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Icône intégrée à l'exe, relue par la fenêtre et par la zone de notification. -->
+    <Resource Include="Assets\LuxMonitor.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.6" />
