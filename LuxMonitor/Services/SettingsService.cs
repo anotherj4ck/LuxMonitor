@@ -77,6 +77,11 @@ public static class SettingsService
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
+
+            // En administrateur, on refuse d'écrire à travers un lien posé par un autre programme.
+            if (SystemInfo.IsUnsafeToWrite(FilePath))
+                return;
+
             File.WriteAllText(FilePath, JsonSerializer.Serialize(settings, JsonOptions));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

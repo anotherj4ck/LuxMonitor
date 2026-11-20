@@ -43,6 +43,14 @@ public partial class App : Application
         // en quittant, ce qui écraserait les nôtres) : on crée ou supprime la tâche planifiée.
         HandleAdminStartupArgument(e.Args);
 
+        // Double-clic sur l'exe alors que le démarrage admin est activé : cette instance n'aurait ni
+        // température ni FPS. On passe la main à la tâche planifiée, qui lance l'instance admin.
+        if (!isAdminStartupChange && TryHandOverToAdminTask())
+        {
+            Shutdown();
+            return;
+        }
+
         var mainWindow = new MainWindow();
 
         // L'application s'arrête quand la fenêtre principale se ferme,
@@ -53,6 +61,39 @@ public partial class App : Application
         mainWindow.Show();
 
         ListenForShowRequests(mainWindow);
+    }
+
+    /// <summary>
+    /// Renvoie true si l'instance admin a été lancée à notre place (on doit alors s'arrêter).
+    /// On libère d'abord le verrou d'instance unique : sinon l'instance admin croirait
+    /// qu'un Lux Monitor tourne déjà, et s'arrêterait aussitôt.
+    /// </summary>
+    private bool TryHandOverToAdminTask()
+    {
+        if (SystemInfo.IsAdministrator() || !SettingsService.Load().AdminStartupEnabled)
+            return false;
+
+        ReleaseSingleInstance();
+        if (AdminStartupService.RunTask())
+            return true;
+
+        // La tâche n'existe plus (supprimée à la main…) : on continue normalement, sans droits admin.
+        return TryAcquireSingleInstance(waitForPrevious: false);
+    }
+
+    private void ReleaseSingleInstance()
+    {
+        try
+        {
+            _instanceMutex?.ReleaseMutex();
+        }
+        catch (ApplicationException)
+        {
+            // Verrou déjà libéré : rien à faire.
+        }
+
+        _instanceMutex?.Dispose();
+        _instanceMutex = null;
     }
 
     private bool TryAcquireSingleInstance(bool waitForPrevious)

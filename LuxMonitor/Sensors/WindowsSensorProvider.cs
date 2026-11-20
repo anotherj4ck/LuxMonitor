@@ -85,7 +85,7 @@ public sealed class WindowsSensorProvider : ISensorProvider
     private bool _diagnosticWritten;
 
     /// <summary>
-    /// Écrit "diagnostic-capteurs.txt" à côté de l'exe, après quelques secondes de fonctionnement
+    /// Écrit "diagnostic-capteurs.txt" dans %LocalAppData%\LuxMonitor, après quelques secondes de fonctionnement
     /// (le temps que les FPS et les capteurs aient démarré, et que d'éventuelles erreurs apparaissent).
     /// </summary>
     private void WriteDiagnosticOnce()
@@ -96,9 +96,14 @@ public sealed class WindowsSensorProvider : ISensorProvider
 
         try
         {
-            // Dossier de l'exe (et non AppContext.BaseDirectory, qui peut pointer vers un dossier
-            // temporaire quand l'application est publiée en un seul fichier).
-            string folder = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
+            // Dossier des données de l'utilisateur, et plus à côté de l'exe : la copie installée par le
+            // démarrage admin est dans Program Files, où l'on ne doit pas écrire sans raison.
+            string folder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LuxMonitor");
+            Directory.CreateDirectory(folder);
+            string reportPath = Path.Combine(folder, "diagnostic-capteurs.txt");
+            if (Services.SystemInfo.IsUnsafeToWrite(reportPath))
+                return;
 
             var report = new System.Text.StringBuilder();
             report.AppendLine($"Lux Monitor {typeof(WindowsSensorProvider).Assembly.GetName().Version}");
@@ -108,7 +113,7 @@ public sealed class WindowsSensorProvider : ISensorProvider
             foreach (string entry in DiagnosticLog.GetEntries())
                 report.AppendLine("    " + entry);
 
-            File.WriteAllText(Path.Combine(folder, "diagnostic-capteurs.txt"), report.ToString());
+            File.WriteAllText(reportPath, report.ToString());
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

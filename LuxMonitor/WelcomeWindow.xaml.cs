@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using LuxMonitor.Localization;
@@ -53,7 +52,7 @@ public partial class WelcomeWindow : Window
     private void PawnIo_Click(object sender, RoutedEventArgs e)
     {
         // Adresse officielle écrite en dur : on n'ouvre jamais une adresse venue d'ailleurs.
-        Process.Start(new ProcessStartInfo(SystemInfo.PawnIoWebsite) { UseShellExecute = true });
+        Launcher.OpenUrl(SystemInfo.PawnIoWebsite);
         ShowResult(Loc.T("Welcome.PawnIoHint"));
     }
 

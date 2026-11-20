@@ -12,16 +12,38 @@ namespace LuxMonitor.Services;
 /// </summary>
 public static class Launcher
 {
+    // Chemins complets des outils Windows : un simple "explorer.exe" serait d'abord cherché dans le
+    // dossier de Lux Monitor, où un faux programme du même nom pourrait avoir été déposé.
+    private static readonly string ExplorerPath =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe");
+
+    private static readonly string TaskManagerPath = Path.Combine(Environment.SystemDirectory, "taskmgr.exe");
+
+    /// <summary>
+    /// Ouvre une page web dans le navigateur par défaut.
+    /// En administrateur, on passe par l'Explorateur : sinon le navigateur hériterait des droits admin,
+    /// et naviguer sur Internet en administrateur est une mauvaise idée.
+    /// </summary>
+    public static void OpenUrl(string url)
+    {
+        if (SystemInfo.IsAdministrator())
+            Start(ExplorerPath, $"\"{url}\"");
+        else
+            Start(url);
+    }
+
     /// <summary>Ouvre un disque dans l'Explorateur de fichiers.</summary>
     public static void OpenFolder(string path)
     {
         // Le chemin vient de Windows (DriveInfo), jamais d'une saisie utilisateur :
         // pas de risque d'injection de commande ici.
-        Start("explorer.exe", path);
+        // Pas de guillemets : une racine comme C:\ finit par une barre oblique inverse, qui
+        // "échapperait" le guillemet fermant. Les racines de disques ne contiennent jamais d'espace.
+        Start(ExplorerPath, path);
     }
 
     /// <summary>Ouvre le Gestionnaire des tâches (onglet Performances en V2).</summary>
-    public static void OpenTaskManager() => Start("taskmgr.exe");
+    public static void OpenTaskManager() => Start(TaskManagerPath);
 
     /// <summary>
     /// Ouvre le logiciel du constructeur du GPU s'il est installé,
@@ -73,7 +95,10 @@ public static class Launcher
         string? program = candidates.FirstOrDefault(File.Exists);
 
         // Adresse écrite en dur dans le code, en https : on ne lance jamais une URL venue de l'extérieur.
-        Start(program ?? fallbackUrl);
+        if (program is not null)
+            Start(program);
+        else
+            OpenUrl(fallbackUrl);
     }
 
     private static string? FindGpuTool(GpuVendor vendor)
