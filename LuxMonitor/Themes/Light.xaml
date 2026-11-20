@@ -32,4 +32,16 @@
     <!-- Fond de la fenêtre : léger voile blanc par-dessus l'Acrylic clair -->
     <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#33FFFFFF"/>
     <SolidColorBrush x:Key="WindowFallbackBrush" Color="#FFF7F3EA"/>
+
+    <!-- Icônes des tuiles (processeur, carte graphique, RAM, disques) -->
+    <SolidColorBrush x:Key="IconBrush" Color="#FFB8892A"/>
+
+    <!-- Formes : arrondi des tuiles et des jauges -->
+    <CornerRadius x:Key="TileCornerRadius">18</CornerRadius>
+    <CornerRadius x:Key="GaugeCornerRadius">2</CornerRadius>
+
+    <!-- Police du titre « Lux Monitor » -->
+    <FontFamily x:Key="HeaderFontFamily">Segoe UI Variable Display, Segoe UI</FontFamily>
+
+    <!-- Décorations facultatives (HeaderOrnament, CornerOrnament) : ce thème n'en a pas. -->
 </ResourceDictionary>

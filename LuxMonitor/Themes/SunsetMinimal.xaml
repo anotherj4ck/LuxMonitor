@@ -1,0 +1,60 @@
+<!--
+    Thème « Sunset Minimal » : doux, épuré et apaisant : pêche et corail.
+    Mêmes clés (x:Key) que tous les autres thèmes. Décorations : volontairement discrètes.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Texte -->
+    <SolidColorBrush x:Key="TextBrush" Color="#FF4A2C26"/>
+    <SolidColorBrush x:Key="MutedTextBrush" Color="#FF9A6E62"/>
+
+    <!-- Tuiles -->
+    <SolidColorBrush x:Key="TileBackgroundBrush" Color="#99FFF4EC"/>
+    <SolidColorBrush x:Key="TileHoverBrush" Color="#CCFFF6F0"/>
+    <SolidColorBrush x:Key="TilePressedBrush" Color="#FFFFFFFF"/>
+    <LinearGradientBrush x:Key="TileBorderBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#FFFFFFFF" Offset="0"/>
+        <GradientStop Color="#33E8907A" Offset="0.5"/>
+        <GradientStop Color="#66E8907A" Offset="1"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="FocusBorderBrush" Color="#FFE8735A"/>
+
+    <!-- Jauges -->
+    <SolidColorBrush x:Key="GaugeTrackBrush" Color="#26E8735A"/>
+    <LinearGradientBrush x:Key="GaugeFillBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#FFF2A07E" Offset="0"/>
+        <GradientStop Color="#FFE8604A" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- Badge DÉMO -->
+    <SolidColorBrush x:Key="BadgeBrush" Color="#40E8735A"/>
+
+    <!-- Fond de la fenêtre, et fond de secours si l'effet Acrylic n'est pas disponible -->
+    <LinearGradientBrush x:Key="WindowBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#FFFADDCB" Offset="0"/>
+        <GradientStop Color="#FFF3C4AF" Offset="1"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="WindowFallbackBrush" Color="#FFF6CDBA"/>
+
+    <!-- Icônes des tuiles -->
+    <SolidColorBrush x:Key="IconBrush" Color="#FFE06A50"/>
+
+    <!-- Formes -->
+    <CornerRadius x:Key="TileCornerRadius">20</CornerRadius>
+    <CornerRadius x:Key="GaugeCornerRadius">2</CornerRadius>
+
+    <!-- Police du titre -->
+    <FontFamily x:Key="HeaderFontFamily">Segoe UI Variable Display, Segoe UI</FontFamily>
+
+    <!-- Soleil couchant sur l'eau avant le titre -->
+    <DrawingImage x:Key="HeaderOrnament">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="Transparent" Geometry="M0,0 H24 V24 H0 Z"/>
+                <GeometryDrawing Brush="#FFF08A6A" Geometry="M6,14 A6,6 0 0 1 18,14 Z"/>
+                <GeometryDrawing Geometry="M3,17 H21 M6.5,20 H17.5"><GeometryDrawing.Pen><Pen Brush="#FFE06A50" Thickness="1.4" StartLineCap="Round" EndLineCap="Round" LineJoin="Round"/></GeometryDrawing.Pen></GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+</ResourceDictionary>

@@ -38,8 +38,13 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="Lux" FontSize="16" FontWeight="SemiBold"/>
+                <!-- Petite décoration du thème avant le titre (facultative) -->
+                <Image Style="{StaticResource OrnamentImage}" Source="{DynamicResource HeaderOrnament}"
+                       Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                <TextBlock Text="Lux" FontSize="16" FontWeight="SemiBold"
+                           FontFamily="{DynamicResource HeaderFontFamily}"/>
                 <TextBlock Text=" Monitor" FontSize="16" FontWeight="Light"
+                           FontFamily="{DynamicResource HeaderFontFamily}"
                            Foreground="{DynamicResource MutedTextBrush}"
                            Visibility="{Binding IsNormalLayout, Converter={StaticResource BoolToVisibility}}"/>
                 <Border Margin="10,0,0,0" Padding="7,1" CornerRadius="8" VerticalAlignment="Center"
@@ -61,7 +66,7 @@
         </Grid>
 
         <!-- Panneau des thèmes (caché par défaut) -->
-        <Border Style="{StaticResource RevealPanel}" Margin="0,0,0,10" Padding="8,10,8,6" CornerRadius="18"
+        <Border Style="{StaticResource RevealPanel}" Margin="0,0,0,10" Padding="8,10,8,6" CornerRadius="{DynamicResource TileCornerRadius}"
                 Background="{DynamicResource TileBackgroundBrush}"
                 BorderBrush="{DynamicResource TileBorderBrush}" BorderThickness="1"
                 Visibility="{Binding IsThemePanelOpen, Converter={StaticResource BoolToVisibility}}">
@@ -116,7 +121,7 @@
 
             <StackPanel>
                 <!-- FPS : visible seulement quand une application affiche des images (et en mode admin) -->
-                <Border Margin="0,0,0,8" Padding="14,10" CornerRadius="18" BorderThickness="1"
+                <Border Margin="0,0,0,8" Padding="14,10" CornerRadius="{DynamicResource TileCornerRadius}" BorderThickness="1"
                         Background="{DynamicResource TileBackgroundBrush}"
                         BorderBrush="{DynamicResource TileBorderBrush}"
                         Visibility="{Binding HasFps, Converter={StaticResource BoolToVisibility}}">
@@ -132,16 +137,23 @@
                 <!-- Processeur -->
                 <Button Style="{StaticResource TileButton}" Click="Cpu_Click"
                         ToolTip="Rechercher les mises à jour du processeur">
-                    <StackPanel>
-                        <TextBlock Style="{StaticResource TileLabel}">
-                            <Run Text="Processeur  ·  "/>
-                            <Run Text="{Binding CpuName, Mode=OneWay}"/>
-                        </TextBlock>
-                        <TextBlock Text="{Binding CpuText}" Style="{StaticResource TileValue}"/>
-                        <ProgressBar Style="{StaticResource Gauge}" Value="{Binding CpuPercent, Mode=OneWay}"/>
-                        <TextBlock Text="{Binding CpuTemperatureText}" Style="{StaticResource TileDetail}"
-                                   Visibility="{Binding HasCpuTemperature, Converter={StaticResource BoolToVisibility}}"/>
-                    </StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Path Style="{StaticResource TileIcon}" Data="{StaticResource IconCpu}"/>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Style="{StaticResource TileLabel}">
+                                <Run Text="Processeur  ·  "/>
+                                <Run Text="{Binding CpuName, Mode=OneWay}"/>
+                            </TextBlock>
+                            <TextBlock Text="{Binding CpuText}" Style="{StaticResource TileValue}"/>
+                            <ProgressBar Style="{StaticResource Gauge}" Value="{Binding CpuPercent, Mode=OneWay}"/>
+                            <TextBlock Text="{Binding CpuTemperatureText}" Style="{StaticResource TileDetail}"
+                                       Visibility="{Binding HasCpuTemperature, Converter={StaticResource BoolToVisibility}}"/>
+                        </StackPanel>
+                    </Grid>
                 </Button>
 
                 <!-- Cartes graphiques -->
@@ -150,15 +162,22 @@
                         <DataTemplate DataType="{x:Type vm:GpuViewModel}">
                             <Button Style="{StaticResource TileButton}" Click="Gpu_Click"
                                     ToolTip="Ouvrir le logiciel de la carte graphique">
-                                <StackPanel>
-                                    <TextBlock Style="{StaticResource TileLabel}">
-                                        <Run Text="Carte graphique  ·  "/>
-                                        <Run Text="{Binding Name, Mode=OneWay}"/>
-                                    </TextBlock>
-                                    <TextBlock Text="{Binding LoadText}" Style="{StaticResource TileValue}"/>
-                                    <ProgressBar Style="{StaticResource Gauge}" Value="{Binding LoadPercent, Mode=OneWay}"/>
-                                    <TextBlock Text="{Binding Detail}" Style="{StaticResource TileDetail}"/>
-                                </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Path Style="{StaticResource TileIcon}" Data="{StaticResource IconGpu}"/>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Style="{StaticResource TileLabel}">
+                                            <Run Text="Carte graphique  ·  "/>
+                                            <Run Text="{Binding Name, Mode=OneWay}"/>
+                                        </TextBlock>
+                                        <TextBlock Text="{Binding LoadText}" Style="{StaticResource TileValue}"/>
+                                        <ProgressBar Style="{StaticResource Gauge}" Value="{Binding LoadPercent, Mode=OneWay}"/>
+                                        <TextBlock Text="{Binding Detail}" Style="{StaticResource TileDetail}"/>
+                                    </StackPanel>
+                                </Grid>
                             </Button>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -167,15 +186,22 @@
                 <!-- RAM -->
                 <Button Style="{StaticResource TileButton}" Click="Ram_Click"
                         ToolTip="Ouvrir le Gestionnaire des tâches">
-                    <StackPanel>
-                        <TextBlock Text="RAM" Style="{StaticResource TileLabel}"/>
-                        <TextBlock Text="{Binding RamText}" Style="{StaticResource TileValue}"/>
-                        <ProgressBar Style="{StaticResource Gauge}" Value="{Binding RamPercent, Mode=OneWay}"/>
-                        <!-- Barrettes installées (fabricant + capacité), si Windows les connaît -->
-                        <TextBlock Text="{Binding RamModulesText}" Style="{StaticResource TileDetail}"
-                                   TextWrapping="Wrap"
-                                   Visibility="{Binding HasRamModules, Converter={StaticResource BoolToVisibility}}"/>
-                    </StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Path Style="{StaticResource TileIcon}" Data="{StaticResource IconRam}"/>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="RAM" Style="{StaticResource TileLabel}"/>
+                            <TextBlock Text="{Binding RamText}" Style="{StaticResource TileValue}"/>
+                            <ProgressBar Style="{StaticResource Gauge}" Value="{Binding RamPercent, Mode=OneWay}"/>
+                            <!-- Barrettes installées (fabricant + capacité), si Windows les connaît -->
+                            <TextBlock Text="{Binding RamModulesText}" Style="{StaticResource TileDetail}"
+                                       TextWrapping="Wrap"
+                                       Visibility="{Binding HasRamModules, Converter={StaticResource BoolToVisibility}}"/>
+                        </StackPanel>
+                    </Grid>
                 </Button>
 
                 <!-- Disques -->
@@ -186,17 +212,24 @@
                         <DataTemplate DataType="{x:Type vm:DiskViewModel}">
                             <Button Style="{StaticResource TileButton}" Click="Disk_Click"
                                     ToolTip="Ouvrir dans l'Explorateur de fichiers">
-                                <StackPanel>
-                                    <TextBlock Style="{StaticResource TileLabel}">
-                                        <Run Text="{Binding Title, Mode=OneWay}"/>
-                                        <Run Text="  ·  "/>
-                                        <Run Text="{Binding Label, Mode=OneWay}"/>
-                                    </TextBlock>
-                                    <TextBlock Text="{Binding UsedPercent, StringFormat={}{0:0} %}"
-                                               Style="{StaticResource TileValue}"/>
-                                    <ProgressBar Style="{StaticResource Gauge}" Value="{Binding UsedPercent, Mode=OneWay}"/>
-                                    <TextBlock Text="{Binding Detail}" Style="{StaticResource TileDetail}"/>
-                                </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Path Style="{StaticResource TileIcon}" Data="{StaticResource IconDisk}"/>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Style="{StaticResource TileLabel}">
+                                            <Run Text="{Binding Title, Mode=OneWay}"/>
+                                            <Run Text="  ·  "/>
+                                            <Run Text="{Binding Label, Mode=OneWay}"/>
+                                        </TextBlock>
+                                        <TextBlock Text="{Binding UsedPercent, StringFormat={}{0:0} %}"
+                                                   Style="{StaticResource TileValue}"/>
+                                        <ProgressBar Style="{StaticResource Gauge}" Value="{Binding UsedPercent, Mode=OneWay}"/>
+                                        <TextBlock Text="{Binding Detail}" Style="{StaticResource TileDetail}"/>
+                                    </StackPanel>
+                                </Grid>
                             </Button>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -213,7 +246,7 @@
 
             <StackPanel>
                 <!-- FPS -->
-                <Border Margin="0,0,0,6" Padding="12,7" CornerRadius="18" BorderThickness="1"
+                <Border Margin="0,0,0,6" Padding="12,7" CornerRadius="{DynamicResource TileCornerRadius}" BorderThickness="1"
                         Background="{DynamicResource TileBackgroundBrush}"
                         BorderBrush="{DynamicResource TileBorderBrush}"
                         ToolTip="{Binding FpsProcessName}"
@@ -333,6 +366,10 @@
             </ItemsControl>
         </Border>
     </StackPanel>
+
+    <!-- Décoration de coin du thème (facultative, discrète, ne capte pas la souris) -->
+    <Image Style="{StaticResource OrnamentImage}" Source="{DynamicResource CornerOrnament}"
+           HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="34" Margin="8,0,0,6"/>
 
     <!-- Poignée de redimensionnement (largeur) : la disposition s'adapte toute seule
          (étroit = miniature, moyen = normal, large = bandeau). -->

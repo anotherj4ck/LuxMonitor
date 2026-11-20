@@ -1,0 +1,59 @@
+<!--
+    Thème « Tactical Radar » : militaire et radar, vert phosphore sur verre sombre.
+    Mêmes clés (x:Key) que tous les autres thèmes. Décorations : volontairement discrètes.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Texte -->
+    <SolidColorBrush x:Key="TextBrush" Color="#FFDDFFE2"/>
+    <SolidColorBrush x:Key="MutedTextBrush" Color="#FF7FC98A"/>
+
+    <!-- Tuiles -->
+    <SolidColorBrush x:Key="TileBackgroundBrush" Color="#1A3CFF6A"/>
+    <SolidColorBrush x:Key="TileHoverBrush" Color="#2E3CFF6A"/>
+    <SolidColorBrush x:Key="TilePressedBrush" Color="#403CFF6A"/>
+    <LinearGradientBrush x:Key="TileBorderBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#993CFF6A" Offset="0"/>
+        <GradientStop Color="#1F3CFF6A" Offset="0.5"/>
+        <GradientStop Color="#663CFF6A" Offset="1"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="FocusBorderBrush" Color="#FF3CFF6A"/>
+
+    <!-- Jauges -->
+    <SolidColorBrush x:Key="GaugeTrackBrush" Color="#263CFF6A"/>
+    <LinearGradientBrush x:Key="GaugeFillBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#FF1F9E3E" Offset="0"/>
+        <GradientStop Color="#FF5CFF7A" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- Badge DÉMO -->
+    <SolidColorBrush x:Key="BadgeBrush" Color="#403CFF6A"/>
+
+    <!-- Fond de la fenêtre, et fond de secours si l'effet Acrylic n'est pas disponible -->
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#33001408"/>
+    <SolidColorBrush x:Key="WindowFallbackBrush" Color="#F2061209"/>
+
+    <!-- Icônes des tuiles -->
+    <SolidColorBrush x:Key="IconBrush" Color="#FF4DFF73"/>
+
+    <!-- Formes -->
+    <CornerRadius x:Key="TileCornerRadius">4</CornerRadius>
+    <CornerRadius x:Key="GaugeCornerRadius">1</CornerRadius>
+
+    <!-- Police du titre -->
+    <FontFamily x:Key="HeaderFontFamily">Segoe UI Variable Display, Segoe UI</FontFamily>
+
+    <!-- Mini radar avant le titre -->
+    <DrawingImage x:Key="HeaderOrnament">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="Transparent" Geometry="M0,0 H24 V24 H0 Z"/>
+                <GeometryDrawing><GeometryDrawing.Geometry><GeometryGroup><EllipseGeometry Center="12,12" RadiusX="10" RadiusY="10"/><EllipseGeometry Center="12,12" RadiusX="6" RadiusY="6"/></GeometryGroup></GeometryDrawing.Geometry><GeometryDrawing.Pen><Pen Brush="#FF4DFF73" Thickness="1.2" StartLineCap="Round" EndLineCap="Round" LineJoin="Round"/></GeometryDrawing.Pen></GeometryDrawing>
+                <GeometryDrawing Geometry="M12,2 V22 M2,12 H22"><GeometryDrawing.Pen><Pen Brush="#804DFF73" Thickness="0.8" StartLineCap="Round" EndLineCap="Round" LineJoin="Round"/></GeometryDrawing.Pen></GeometryDrawing>
+                <GeometryDrawing Brush="#664DFF73" Geometry="M12,12 L12,2 A10,10 0 0 1 19.07,4.93 Z"/>
+                <GeometryDrawing Brush="#FF4DFF73"><GeometryDrawing.Geometry><GeometryGroup><EllipseGeometry Center="16,8" RadiusX="1.3" RadiusY="1.3"/></GeometryGroup></GeometryDrawing.Geometry></GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+</ResourceDictionary>

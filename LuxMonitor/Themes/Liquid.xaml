@@ -41,4 +41,16 @@
 
     <!-- Fond de secours si l'effet Acrylic de Windows 11 n'est pas disponible -->
     <SolidColorBrush x:Key="WindowFallbackBrush" Color="#E61C1F26"/>
+
+    <!-- Icônes des tuiles (processeur, carte graphique, RAM, disques) -->
+    <SolidColorBrush x:Key="IconBrush" Color="#CCFFFFFF"/>
+
+    <!-- Formes : arrondi des tuiles et des jauges -->
+    <CornerRadius x:Key="TileCornerRadius">18</CornerRadius>
+    <CornerRadius x:Key="GaugeCornerRadius">2</CornerRadius>
+
+    <!-- Police du titre « Lux Monitor » -->
+    <FontFamily x:Key="HeaderFontFamily">Segoe UI Variable Display, Segoe UI</FontFamily>
+
+    <!-- Décorations facultatives (HeaderOrnament, CornerOrnament) : ce thème n'en a pas. -->
 </ResourceDictionary>

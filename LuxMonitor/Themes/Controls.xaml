@@ -6,6 +6,40 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+    <!-- ===== Icônes des tuiles =====
+         Dessins vectoriels sur une grille de 24 × 24, tracés au trait :
+         nets à toutes les tailles, colorés par le thème (IconBrush). -->
+    <Geometry x:Key="IconCpu">M7,7 H17 V17 H7 Z M10,10 H14 V14 H10 Z M9.5,4 V7 M12,4 V7 M14.5,4 V7 M9.5,17 V20 M12,17 V20 M14.5,17 V20 M4,9.5 H7 M4,12 H7 M4,14.5 H7 M17,9.5 H20 M17,12 H20 M17,14.5 H20</Geometry>
+    <Geometry x:Key="IconGpu">M3,7 H21 V16 H3 Z M8,11.5 A3,3 0 1 0 14,11.5 A3,3 0 1 0 8,11.5 M16.5,10 H18.5 M16.5,13 H18.5 M5,16 V19 M3,7 V5</Geometry>
+    <Geometry x:Key="IconRam">M3,8 H21 V15 H3 Z M6,10.5 H8.5 V12.5 H6 Z M10.75,10.5 H13.25 V12.5 H10.75 Z M15.5,10.5 H18 V12.5 H15.5 Z M5.5,15 V17.5 M8.5,15 V17.5 M11.5,15 V17.5 M14.5,15 V17.5 M17.5,15 V17.5</Geometry>
+    <Geometry x:Key="IconDisk">M4,6 H20 V18 H4 Z M4,14 H20 M15.5,16 H17.5</Geometry>
+
+    <Style x:Key="TileIcon" TargetType="Path">
+        <Setter Property="Width" Value="22"/>
+        <Setter Property="Height" Value="22"/>
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Setter Property="Stroke" Value="{DynamicResource IconBrush}"/>
+        <Setter Property="StrokeThickness" Value="1.4"/>
+        <Setter Property="StrokeLineJoin" Value="Round"/>
+        <Setter Property="StrokeStartLineCap" Value="Round"/>
+        <Setter Property="StrokeEndLineCap" Value="Round"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="Margin" Value="0,2,12,0"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+    </Style>
+
+    <!-- Décoration d'un thème (dessin vectoriel). Si le thème n'en fournit pas,
+         l'image est vide : on la retire complètement de la mise en page. -->
+    <Style x:Key="OrnamentImage" TargetType="Image">
+        <Setter Property="IsHitTestVisible" Value="False"/>
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Style.Triggers>
+            <Trigger Property="Source" Value="{x:Null}">
+                <Setter Property="Visibility" Value="Collapsed"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- Tuile cliquable (bouton : fonctionne aussi au clavier, Tab + Entrée) -->
     <Style x:Key="TileButton" TargetType="Button">
         <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
@@ -20,7 +54,7 @@
                     <Border x:Name="Card"
                             Background="{DynamicResource TileBackgroundBrush}"
                             BorderBrush="{DynamicResource TileBorderBrush}"
-                            BorderThickness="1" CornerRadius="18" Padding="{TemplateBinding Padding}">
+                            BorderThickness="1" CornerRadius="{DynamicResource TileCornerRadius}" Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Stretch"/>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -117,8 +151,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ProgressBar">
                     <Grid>
-                        <Border x:Name="PART_Track" CornerRadius="2" Background="{DynamicResource GaugeTrackBrush}"/>
-                        <Border x:Name="PART_Indicator" CornerRadius="2" HorizontalAlignment="Left"
+                        <Border x:Name="PART_Track" CornerRadius="{DynamicResource GaugeCornerRadius}" Background="{DynamicResource GaugeTrackBrush}"/>
+                        <Border x:Name="PART_Indicator" CornerRadius="{DynamicResource GaugeCornerRadius}" HorizontalAlignment="Left"
                                 Background="{DynamicResource GaugeFillBrush}"/>
                     </Grid>
                 </ControlTemplate>

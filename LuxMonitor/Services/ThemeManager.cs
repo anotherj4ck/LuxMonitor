@@ -14,6 +14,13 @@ public static class ThemeManager
         new ThemeDefinition("liquid", "Liquide", "/Themes/Liquid.xaml", UseAcrylic: true, IsDark: true, "#66788899", "#F2FFFFFF"),
         new ThemeDefinition("dark", "Sombre", "/Themes/Dark.xaml", UseAcrylic: false, IsDark: true, "#FF141B2B", "#FF6EA8FE"),
         new ThemeDefinition("light", "Clair", "/Themes/Light.xaml", UseAcrylic: true, IsDark: false, "#FFF7F3EA", "#FFE0B43A"),
+        new ThemeDefinition("tactical", "Tactical Radar", "/Themes/TacticalRadar.xaml", UseAcrylic: true, IsDark: true, "#FF0B1F12", "#FF4DFF73"),
+        new ThemeDefinition("cyber", "Cyber HUD", "/Themes/CyberHud.xaml", UseAcrylic: true, IsDark: true, "#FF06161E", "#FF2EE6FF"),
+        new ThemeDefinition("kawaii", "Kawaii Neko", "/Themes/KawaiiNeko.xaml", UseAcrylic: false, IsDark: false, "#FFFBDDE6", "#FFEE7A9E"),
+        // Nom provisoire : Gaël cherche encore le nom définitif. Ne pas changer l'identifiant "crimson".
+        new ThemeDefinition("crimson", "Lune Rouge", "/Themes/LuneRouge.xaml", UseAcrylic: false, IsDark: true, "#FF140B0D", "#FFE0283C"),
+        new ThemeDefinition("sakura", "Sakura Kintsugi", "/Themes/SakuraKintsugi.xaml", UseAcrylic: false, IsDark: true, "#FF2A1216", "#FFE2B66A"),
+        new ThemeDefinition("sunset", "Sunset Minimal", "/Themes/SunsetMinimal.xaml", UseAcrylic: false, IsDark: false, "#FFF6CDBA", "#FFE8604A"),
     ];
 
     public static ThemeDefinition Default => Themes[0];
