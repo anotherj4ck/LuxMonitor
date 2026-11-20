@@ -58,7 +58,9 @@ public partial class MainWindow : Window
         _timer.Tick += async (_, _) => await _viewModel.RefreshAsync();
         IsVisibleChanged += (_, _) => UpdateRefreshState();
 
-        _tray = new TrayIconService(ToggleWidget, ToggleOverlay, MoveOverlay, SetOverlayCorner, _settings.OverlayCorner,
+        ApplyWindowLock(_settings.IsWindowLocked);
+
+        _tray = new TrayIconService(ToggleWidget, _settings.IsWindowLocked, SetWindowLocked, ToggleOverlay, MoveOverlay, SetOverlayCorner, _settings.OverlayCorner,
             ShowWelcome, _settings.AdminStartupEnabled, ExitApplication);
 
         // Premier lancement : on présente la température et les FPS (une seule fois).
@@ -284,6 +286,19 @@ public partial class MainWindow : Window
         SettingsService.Save(_settings);
     }
 
+    // ---- Fenêtre figée ----
+
+    private void SetWindowLocked(bool isLocked)
+    {
+        ApplyWindowLock(isLocked);
+        _settings.IsWindowLocked = isLocked;
+        SettingsService.Save(_settings);
+    }
+
+    /// <summary>Figée : on cache la poignée de redimensionnement ; le déplacement est bloqué au clic.</summary>
+    private void ApplyWindowLock(bool isLocked)
+        => ResizeGrip.Visibility = isLocked ? Visibility.Collapsed : Visibility.Visible;
+
     // ---- Taille et disposition ----
 
     /// <summary>
@@ -354,7 +369,7 @@ public partial class MainWindow : Window
     // La fenêtre n'a pas de barre de titre : on la déplace en cliquant n'importe où.
     private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.ButtonState != MouseButtonState.Pressed)
+        if (e.ButtonState != MouseButtonState.Pressed || _settings.IsWindowLocked)
             return;
 
         DragMove();       // Rend la main quand on relâche le bouton de la souris...

@@ -373,7 +373,7 @@
 
     <!-- Poignée de redimensionnement (largeur) : la disposition s'adapte toute seule
          (étroit = miniature, moyen = normal, large = bandeau). -->
-    <Thumb HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,4,4"
+    <Thumb x:Name="ResizeGrip" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,4,4"
            Width="16" Height="16" Cursor="SizeWE" ToolTip="Glisser pour redimensionner"
            DragDelta="ResizeGrip_DragDelta" DragCompleted="ResizeGrip_DragCompleted">
         <Thumb.Template>

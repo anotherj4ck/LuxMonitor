@@ -16,6 +16,9 @@ public sealed class AppSettings
     /// <summary>Largeur choisie par l'utilisateur (la hauteur s'adapte toute seule).</summary>
     public double? WindowWidth { get; set; }
 
+    /// <summary>Fenêtre figée : ni déplacement, ni redimensionnement (les clics sur les tuiles marchent toujours).</summary>
+    public bool IsWindowLocked { get; set; }
+
     /// <summary>Coin de l'écran du mode jeu.</summary>
     public OverlayCorner OverlayCorner { get; set; } = OverlayCorner.TopLeft;
 

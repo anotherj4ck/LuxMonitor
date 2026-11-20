@@ -18,6 +18,8 @@ public sealed class TrayIconService : IDisposable
 
     public TrayIconService(
         Action toggleWindow,
+        bool windowLocked,
+        Action<bool> setWindowLocked,
         Action toggleOverlay,
         Action moveOverlay,
         Action<OverlayCorner> setOverlayCorner,
@@ -81,8 +83,17 @@ public sealed class TrayIconService : IDisposable
                 startupItem.Checked = StartupService.IsEnabled(); // Échec : on réaffiche l'état réel.
         };
 
+        // Figer : la fenêtre ne bouge plus et ne se redimensionne plus (évite les déplacements par erreur).
+        var lockItem = new Forms.ToolStripMenuItem("Figer la fenêtre")
+        {
+            CheckOnClick = true,
+            Checked = windowLocked,
+        };
+        lockItem.CheckedChanged += (_, _) => setWindowLocked(lockItem.Checked);
+
         var menu = new Forms.ContextMenuStrip();
         menu.Items.Add("Afficher / masquer", null, (_, _) => toggleWindow());
+        menu.Items.Add(lockItem);
         menu.Items.Add(_overlayItem);
         menu.Items.Add(cornerMenu);
         menu.Items.Add(new Forms.ToolStripSeparator());
