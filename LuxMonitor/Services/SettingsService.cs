@@ -19,6 +19,9 @@ public sealed class AppSettings
     /// <summary>Fenêtre figée : ni déplacement, ni redimensionnement (les clics sur les tuiles marchent toujours).</summary>
     public bool IsWindowLocked { get; set; }
 
+    /// <summary>Langue choisie : "fr", "en", ou null pour suivre la langue de Windows.</summary>
+    public string? Language { get; set; }
+
     /// <summary>Coin de l'écran du mode jeu.</summary>
     public OverlayCorner OverlayCorner { get; set; } = OverlayCorner.TopLeft;
 

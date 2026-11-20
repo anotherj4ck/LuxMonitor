@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Threading;
+using LuxMonitor.Localization;
 using LuxMonitor.Models;
 using LuxMonitor.Sensors;
 using LuxMonitor.Services;
@@ -33,6 +34,10 @@ public partial class MainWindow : Window
     private bool _widgetWasVisibleBeforeOverlay;
     private WelcomeWindow? _welcome;
 
+    // Choix du thème : fenêtre séparée, ouverte à côté du widget.
+    private ThemePickerWindow? _themePicker;
+    private DateTime _themePickerClosedAt;
+
     // Vrai seulement quand on quitte pour de bon (menu "Quitter").
     // Sinon, fermer la fenêtre la cache simplement dans la zone de notification.
     private bool _isExiting;
@@ -60,7 +65,7 @@ public partial class MainWindow : Window
 
         ApplyWindowLock(_settings.IsWindowLocked);
 
-        _tray = new TrayIconService(ToggleWidget, _settings.IsWindowLocked, SetWindowLocked, ToggleOverlay, MoveOverlay, SetOverlayCorner, _settings.OverlayCorner,
+        _tray = new TrayIconService(ToggleWidget, _settings.IsWindowLocked, SetWindowLocked, Loc.FromCode(_settings.Language), SetLanguage, ToggleOverlay, MoveOverlay, SetOverlayCorner, _settings.OverlayCorner,
             ShowWelcome, _settings.AdminStartupEnabled, ExitApplication);
 
         // Premier lancement : on présente la température et les FPS (une seule fois).
@@ -87,15 +92,14 @@ public partial class MainWindow : Window
 
     private void HideWidget(bool showHint)
     {
-        _viewModel.IsThemePanelOpen = false;
+        _themePicker?.Close();
         Hide();
         SavePosition();
 
         // La première fois seulement, on explique où est passée la fenêtre.
         if (showHint && !_settings.HasShownTrayHint)
         {
-            _tray.ShowHint("Lux Monitor continue de tourner",
-                "Il est dans la zone de notification. Clic gauche pour le rouvrir, clic droit pour le menu.");
+            _tray.ShowHint(Loc.T("Hint.TrayTitle"), Loc.T("Hint.TrayText"));
             _settings.HasShownTrayHint = true;
             SettingsService.Save(_settings);
         }
@@ -208,10 +212,8 @@ public partial class MainWindow : Window
         if (_settings.HasShownOverlayHint)
             return;
 
-        string howToExit = _hotkey?.IsRegistered == true
-            ? "Ctrl+Maj+L ou le menu de l'icône pour revenir au widget."
-            : "Le menu de l'icône pour revenir au widget (le raccourci est déjà pris par un autre logiciel).";
-        _tray.ShowHint("Mode jeu activé", howToExit);
+        string howToExit = Loc.T(_hotkey?.IsRegistered == true ? "Hint.OverlayExitShortcut" : "Hint.OverlayExitMenu");
+        _tray.ShowHint(Loc.T("Hint.OverlayTitle"), howToExit);
 
         _settings.HasShownOverlayHint = true;
         SettingsService.Save(_settings);
@@ -252,6 +254,7 @@ public partial class MainWindow : Window
         _hotkey?.Dispose();  // Libère le raccourci clavier pour les autres applications.
         _overlay?.Close();
         _welcome?.Close();
+        _themePicker?.Close();
     }
 
     // ---- Position de la fenêtre ----
@@ -284,6 +287,16 @@ public partial class MainWindow : Window
         _settings.WindowLeft = Left;
         _settings.WindowTop = Top;
         SettingsService.Save(_settings);
+    }
+
+    // ---- Langue ----
+
+    /// <summary>Choix dans le menu de l'icône : null = suivre la langue de Windows.</summary>
+    private void SetLanguage(AppLanguage? language)
+    {
+        _settings.Language = Loc.ToCode(language);
+        SettingsService.Save(_settings);
+        Loc.Instance.Apply(language);
     }
 
     // ---- Fenêtre figée ----
@@ -349,18 +362,33 @@ public partial class MainWindow : Window
         _viewModel.SetActiveTheme(theme.Id);
     }
 
+    /// <summary>Le bouton palette ouvre ou ferme la fenêtre de choix du thème.</summary>
     private void ThemeButton_Click(object sender, RoutedEventArgs e)
-        => _viewModel.IsThemePanelOpen = !_viewModel.IsThemePanelOpen;
-
-    private void ThemeOption_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not FrameworkElement { DataContext: ThemeOptionViewModel option })
+        if (_themePicker is not null)
+        {
+            _themePicker.Close();
+            return;
+        }
+
+        // Si la fenêtre était ouverte, cliquer sur ce bouton lui a fait perdre le focus : elle vient
+        // de se fermer toute seule. Sans ce garde-fou, le même clic la rouvrirait aussitôt.
+        if (DateTime.UtcNow - _themePickerClosedAt < TimeSpan.FromMilliseconds(300))
             return;
 
-        ApplyTheme(option.Theme);
-        _viewModel.IsThemePanelOpen = false;
+        _themePicker = new ThemePickerWindow(this, _viewModel, SelectTheme);
+        _themePicker.Closed += (_, _) =>
+        {
+            _themePicker = null;
+            _themePickerClosedAt = DateTime.UtcNow;
+        };
+        _themePicker.Show();
+    }
 
-        _settings.ThemeId = option.Theme.Id;
+    private void SelectTheme(ThemeDefinition theme)
+    {
+        ApplyTheme(theme);
+        _settings.ThemeId = theme.Id;
         SettingsService.Save(_settings);
     }
 

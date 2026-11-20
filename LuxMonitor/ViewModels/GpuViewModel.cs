@@ -1,4 +1,4 @@
-using System.Globalization;
+using LuxMonitor.Localization;
 using LuxMonitor.Models;
 
 namespace LuxMonitor.ViewModels;
@@ -6,8 +6,6 @@ namespace LuxMonitor.ViewModels;
 /// <summary>Ce que l'interface affiche pour une carte graphique.</summary>
 public sealed class GpuViewModel : ObservableObject
 {
-    private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
-
     private string _name = string.Empty;
     private string _loadText = "—";
     private double _loadPercent;
@@ -72,7 +70,7 @@ public sealed class GpuViewModel : ObservableObject
 
         TemperatureText = snapshot.TemperatureC is double t ? $"{t:0} °C" : string.Empty;
         VramText = snapshot.MemoryUsedGb is double vramUsed && snapshot.MemoryTotalGb is double vramTotal && vramTotal > 0
-            ? string.Format(French, "VRAM {0:0.0}/{1:0} Go", vramUsed, vramTotal)
+            ? Loc.F("Fmt.OverlayVram", vramUsed, vramTotal)
             : string.Empty;
 
         // On n'affiche que ce qui est connu : pas de "0 °C" inventé.
@@ -80,10 +78,10 @@ public sealed class GpuViewModel : ObservableObject
         if (snapshot.TemperatureC is double temp)
             parts.Add($"{temp:0} °C");
         if (snapshot.MemoryUsedGb is double used && snapshot.MemoryTotalGb is double total && total > 0)
-            parts.Add(string.Format(French, "{0:0.0} / {1:0} Go VRAM", used, total));
+            parts.Add(Loc.F("Fmt.GpuVram", used, total));
 
         // Un GPU intégré (Intel) n'a ni température ni mémoire dédiée : c'est normal, on le dit clairement.
-        string fallback = Vendor == GpuVendor.Intel ? "Graphique intégré · mémoire partagée" : "Capteurs non disponibles";
+        string fallback = Loc.T(Vendor == GpuVendor.Intel ? "Gpu.Integrated" : "Gpu.NoSensors");
         Detail = parts.Count > 0 ? string.Join("  ·  ", parts) : fallback;
     }
 

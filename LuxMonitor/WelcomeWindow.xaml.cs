@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
+using LuxMonitor.Localization;
 using LuxMonitor.Services;
 
 namespace LuxMonitor;
@@ -24,6 +25,8 @@ public partial class WelcomeWindow : Window
         _exitApplication = exitApplication;
 
         Activated += (_, _) => RefreshState();
+        Loc.Instance.LanguageChanged += RefreshState;
+        Closed += (_, _) => Loc.Instance.LanguageChanged -= RefreshState;
         RefreshState();
     }
 
@@ -39,19 +42,19 @@ public partial class WelcomeWindow : Window
     private void RefreshState()
     {
         bool pawnIoInstalled = SystemInfo.IsPawnIoInstalled();
-        PawnIoStatus.Text = pawnIoInstalled ? "· installé ✓" : "· non installé";
+        PawnIoStatus.Text = Loc.T(pawnIoInstalled ? "Welcome.Installed" : "Welcome.NotInstalled");
         PawnIoButton.Visibility = pawnIoInstalled ? Visibility.Collapsed : Visibility.Visible;
 
         bool adminEnabled = _isAdminStartupEnabled();
-        AdminStatus.Text = adminEnabled ? "· activés ✓" : "· non activés";
-        AdminButton.Content = adminEnabled ? "Désactiver" : "Activer";
+        AdminStatus.Text = Loc.T(adminEnabled ? "Welcome.Enabled" : "Welcome.NotEnabled");
+        AdminButton.Content = Loc.T(adminEnabled ? "Welcome.Disable" : "Welcome.Enable");
     }
 
     private void PawnIo_Click(object sender, RoutedEventArgs e)
     {
         // Adresse officielle écrite en dur : on n'ouvre jamais une adresse venue d'ailleurs.
         Process.Start(new ProcessStartInfo(SystemInfo.PawnIoWebsite) { UseShellExecute = true });
-        ShowResult("Installe PawnIO depuis le site, puis reviens ici : cette fenêtre se mettra à jour toute seule.");
+        ShowResult(Loc.T("Welcome.PawnIoHint"));
     }
 
     private void Admin_Click(object sender, RoutedEventArgs e)
@@ -68,7 +71,7 @@ public partial class WelcomeWindow : Window
         }
         else
         {
-            ShowResult("Activation annulée : l'écran de confirmation administrateur a été refusé. Rien n'a été modifié.");
+            ShowResult(Loc.T("Welcome.AdminCancelled"));
         }
     }
 

@@ -6,7 +6,8 @@
 <Window x:Class="LuxMonitor.WelcomeWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Bienvenue dans Lux Monitor"
+        xmlns:loc="clr-namespace:LuxMonitor.Localization"
+        Title="{loc:Tr Welcome.Title}"
         Width="460" SizeToContent="Height"
         ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
         Icon="/Assets/LuxMonitor.ico"
@@ -25,27 +26,27 @@
         <!-- En-tête -->
         <Grid Margin="0,0,0,14">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="Bienvenue dans " FontSize="20" FontWeight="Light"/>
+                <TextBlock Text="{loc:Tr Welcome.HeaderPrefix}" FontSize="20" FontWeight="Light"/>
                 <TextBlock Text="Lux" FontSize="20" FontWeight="SemiBold"/>
             </StackPanel>
             <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" Click="Close_Click"
-                    ToolTip="Fermer" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10"
+                    ToolTip="{loc:Tr Tip.Close}" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10"
                     Content="&#xE8BB;"/>
         </Grid>
 
         <TextBlock TextWrapping="Wrap" FontSize="13" Margin="0,0,0,16"
                    Foreground="{DynamicResource MutedTextBrush}"
-                   Text="Lux Monitor fonctionne déjà : processeur, carte graphique, RAM et disques s'affichent sans rien installer. Deux informations demandent un peu plus de préparation."/>
+                   Text="{loc:Tr Welcome.Intro}"/>
 
         <!-- Carte : température et FPS -->
         <Border Padding="18,16" CornerRadius="18" BorderThickness="1"
                 Background="{DynamicResource TileBackgroundBrush}"
                 BorderBrush="{DynamicResource TileBorderBrush}">
             <StackPanel>
-                <TextBlock Text="Température du processeur et FPS" FontSize="15" FontWeight="SemiBold"/>
+                <TextBlock Text="{loc:Tr Welcome.CardTitle}" FontSize="15" FontWeight="SemiBold"/>
                 <TextBlock TextWrapping="Wrap" FontSize="13" Margin="0,6,0,14"
                            Foreground="{DynamicResource MutedTextBrush}"
-                           Text="Windows ne donne pas ces informations directement. Pour les lire, Lux Monitor a besoin de deux choses :"/>
+                           Text="{loc:Tr Welcome.CardText}"/>
 
                 <!-- Étape 1 : PawnIO -->
                 <Grid Margin="0,0,0,14">
@@ -55,16 +56,16 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Margin="0,0,12,0">
                         <TextBlock FontSize="13" FontWeight="SemiBold">
-                            <Run Text="1.  Le pilote PawnIO"/>
+                            <Run Text="{loc:Tr Welcome.Step1}"/>
                             <Run x:Name="PawnIoStatus" FontWeight="Normal"/>
                         </TextBlock>
                         <TextBlock TextWrapping="Wrap" FontSize="12" Margin="0,3,0,0"
                                    Foreground="{DynamicResource MutedTextBrush}"
-                                   Text="Gratuit et open source, utilisé aussi par LibreHardwareMonitor et Fan Control. Nécessaire pour la température."/>
+                                   Text="{loc:Tr Welcome.Step1Text}"/>
                     </StackPanel>
                     <Button x:Name="PawnIoButton" Grid.Column="1" Style="{StaticResource ActionButton}"
-                            VerticalAlignment="Center" Content="Télécharger" Click="PawnIo_Click"
-                            ToolTip="Ouvre le site officiel de PawnIO dans le navigateur"/>
+                            VerticalAlignment="Center" Content="{loc:Tr Welcome.Download}" Click="PawnIo_Click"
+                            ToolTip="{loc:Tr Tip.PawnIo}"/>
                 </Grid>
 
                 <!-- Étape 2 : démarrage administrateur -->
@@ -75,15 +76,15 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Margin="0,0,12,0">
                         <TextBlock FontSize="13" FontWeight="SemiBold">
-                            <Run Text="2.  Les droits administrateur"/>
+                            <Run Text="{loc:Tr Welcome.Step2}"/>
                             <Run x:Name="AdminStatus" FontWeight="Normal"/>
                         </TextBlock>
                         <TextBlock TextWrapping="Wrap" FontSize="12" Margin="0,3,0,0"
                                    Foreground="{DynamicResource MutedTextBrush}"
-                                   Text="Nécessaires pour la température et les FPS. Lux Monitor crée une tâche planifiée qui le lance ainsi à chaque ouverture de session, sans vous le redemander."/>
+                                   Text="{loc:Tr Welcome.Step2Text}"/>
                     </StackPanel>
                     <Button x:Name="AdminButton" Grid.Column="1" Style="{StaticResource ActionButton}"
-                            VerticalAlignment="Center" Content="Activer" Click="Admin_Click"/>
+                            VerticalAlignment="Center" Click="Admin_Click"/>
                 </Grid>
             </StackPanel>
         </Border>
@@ -94,9 +95,9 @@
 
         <TextBlock TextWrapping="Wrap" FontSize="11" Margin="4,14,4,16"
                    Foreground="{DynamicResource MutedTextBrush}"
-                   Text="Un pilote a un accès très profond au système : ne l'installez que si vous faites confiance à sa source. Vous pourrez revenir ici à tout moment depuis le menu de l'icône Lux Monitor (« Température et FPS… »)."/>
+                   Text="{loc:Tr Welcome.Warning}"/>
 
-        <Button Style="{StaticResource ActionButton}" HorizontalAlignment="Right" Content="Terminer"
+        <Button Style="{StaticResource ActionButton}" HorizontalAlignment="Right" Content="{loc:Tr Welcome.Done}"
                 Click="Close_Click"/>
     </StackPanel>
 </Window>

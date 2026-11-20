@@ -10,9 +10,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:LuxMonitor.ViewModels"
+        xmlns:loc="clr-namespace:LuxMonitor.Localization"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
-        Title="Lux Monitor - Mode jeu"
+        Title="{loc:Tr Overlay.Title}"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         Topmost="True" ShowInTaskbar="False" ShowActivated="False" Focusable="False"
         ResizeMode="NoResize" SizeToContent="WidthAndHeight"
@@ -75,7 +76,7 @@
                  Seule cette zone devient cliquable quand la souris la survole (voir le code). -->
             <Border x:Name="ExitButton" Margin="14,0,0,0" Padding="6,2" CornerRadius="6"
                     Background="Transparent" Opacity="0.6" VerticalAlignment="Center"
-                    ToolTip="Revenir au widget (Ctrl+Maj+L)"
+                    ToolTip="{loc:Tr Tip.OverlayExit}"
                     MouseLeftButtonUp="ExitButton_MouseLeftButtonUp">
                 <TextBlock Text="&#xE73F;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
                            FontWeight="Normal" FontSize="12"/>

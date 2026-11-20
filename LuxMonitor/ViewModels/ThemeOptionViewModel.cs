@@ -1,3 +1,4 @@
+using LuxMonitor.Localization;
 using LuxMonitor.Models;
 
 namespace LuxMonitor.ViewModels;
@@ -7,11 +8,19 @@ public sealed class ThemeOptionViewModel : ObservableObject
 {
     private bool _isActive;
 
-    public ThemeOptionViewModel(ThemeDefinition theme) => Theme = theme;
+    public ThemeOptionViewModel(ThemeDefinition theme)
+    {
+        Theme = theme;
+        Loc.Instance.LanguageChanged += () => OnPropertyChanged(nameof(Name));
+    }
 
     public ThemeDefinition Theme { get; }
 
-    public string Name => Theme.DisplayName;
+    /// <summary>
+    /// Nom affiché : traduit pour les thèmes aux noms français (Liquide, Sombre, Clair),
+    /// tel quel pour les autres (Tactical Radar, Sakura Kintsugi…).
+    /// </summary>
+    public string Name => Loc.Has($"Theme.{Theme.Id}") ? Loc.T($"Theme.{Theme.Id}") : Theme.DisplayName;
 
     // Des chaînes "#AARRGGBB" : WPF les convertit tout seul en couleurs lors du binding.
     public string PreviewBackground => Theme.PreviewBackground;

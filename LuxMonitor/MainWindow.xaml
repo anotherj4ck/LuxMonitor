@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:LuxMonitor.ViewModels"
+        xmlns:loc="clr-namespace:LuxMonitor.Localization"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
         Title="Lux Monitor"
@@ -50,67 +51,20 @@
                 <Border Margin="10,0,0,0" Padding="7,1" CornerRadius="8" VerticalAlignment="Center"
                         Background="{DynamicResource BadgeBrush}"
                         Visibility="{Binding IsDemo, Converter={StaticResource BoolToVisibility}}">
-                    <TextBlock Text="DÉMO" FontSize="10" FontWeight="SemiBold"/>
+                    <TextBlock Text="{loc:Tr Widget.Demo}" FontSize="10" FontWeight="SemiBold"/>
                 </Border>
             </StackPanel>
 
             <!-- Icônes : police Segoe Fluent Icons, intégrée à Windows 11 -->
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button Style="{StaticResource IconButton}" Click="OverlayButton_Click" ToolTip="Mode jeu (Ctrl+Maj+L)"
+                <Button Style="{StaticResource IconButton}" Click="OverlayButton_Click" ToolTip="{loc:Tr Tip.GameMode}"
                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Content="&#xE7FC;" Margin="0,0,6,0"/>
-                <Button Style="{StaticResource IconButton}" Click="ThemeButton_Click" ToolTip="Changer de thème"
+                <Button Style="{StaticResource IconButton}" Click="ThemeButton_Click" ToolTip="{loc:Tr Tip.Theme}"
                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Content="&#xE790;" Margin="0,0,6,0"/>
-                <Button Style="{StaticResource IconButton}" Click="Close_Click" ToolTip="Masquer (Lux Monitor reste dans la zone de notification)"
+                <Button Style="{StaticResource IconButton}" Click="Close_Click" ToolTip="{loc:Tr Tip.Hide}"
                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10" Content="&#xE8BB;"/>
             </StackPanel>
         </Grid>
-
-        <!-- Panneau des thèmes (caché par défaut) -->
-        <Border Style="{StaticResource RevealPanel}" Margin="0,0,0,10" Padding="8,10,8,6" CornerRadius="{DynamicResource TileCornerRadius}"
-                Background="{DynamicResource TileBackgroundBrush}"
-                BorderBrush="{DynamicResource TileBorderBrush}" BorderThickness="1"
-                Visibility="{Binding IsThemePanelOpen, Converter={StaticResource BoolToVisibility}}">
-            <Border.RenderTransform>
-                <TranslateTransform/>
-            </Border.RenderTransform>
-
-            <StackPanel>
-                <TextBlock Text="THÈME" Style="{StaticResource SectionTitle}" Margin="8,0,0,6"/>
-
-                <ItemsControl ItemsSource="{Binding ThemeOptions}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <!-- WrapPanel : les pastilles passent à la ligne si le widget est étroit -->
-                            <WrapPanel HorizontalAlignment="Center"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type vm:ThemeOptionViewModel}">
-                            <Button Style="{StaticResource ThemeOptionButton}" Click="ThemeOption_Click"
-                                    ToolTip="{Binding Name}">
-                                <StackPanel>
-                                    <!-- Aperçu : fond du thème + petite jauge à sa couleur d'accent -->
-                                    <Grid Width="58" Height="40">
-                                        <Border CornerRadius="12" BorderThickness="1"
-                                                Background="{Binding PreviewBackground}"
-                                                BorderBrush="{DynamicResource TileBorderBrush}"/>
-                                        <Border Width="26" Height="4" CornerRadius="2" VerticalAlignment="Bottom"
-                                                Margin="0,0,0,9" Background="{Binding PreviewAccent}"/>
-                                        <TextBlock Text="&#xE73E;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                                                   FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Top"
-                                                   Margin="0,5,7,0" Foreground="{Binding PreviewAccent}"
-                                                   Visibility="{Binding IsActive, Converter={StaticResource BoolToVisibility}}"/>
-                                    </Grid>
-                                    <TextBlock Text="{Binding Name}" FontSize="12" Margin="0,6,0,0"
-                                               HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </Border>
 
         <!-- ===== Disposition NORMALE ===== -->
         <Border Style="{StaticResource RevealPanel}"
@@ -136,7 +90,7 @@
 
                 <!-- Processeur -->
                 <Button Style="{StaticResource TileButton}" Click="Cpu_Click"
-                        ToolTip="Rechercher les mises à jour du processeur">
+                        ToolTip="{loc:Tr Tip.Cpu}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -145,7 +99,7 @@
                         <Path Style="{StaticResource TileIcon}" Data="{StaticResource IconCpu}"/>
                         <StackPanel Grid.Column="1">
                             <TextBlock Style="{StaticResource TileLabel}">
-                                <Run Text="Processeur  ·  "/>
+                                <Run Text="{loc:Tr Widget.Processor}"/><Run Text="  ·  "/>
                                 <Run Text="{Binding CpuName, Mode=OneWay}"/>
                             </TextBlock>
                             <TextBlock Text="{Binding CpuText}" Style="{StaticResource TileValue}"/>
@@ -161,7 +115,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type vm:GpuViewModel}">
                             <Button Style="{StaticResource TileButton}" Click="Gpu_Click"
-                                    ToolTip="Ouvrir le logiciel de la carte graphique">
+                                    ToolTip="{loc:Tr Tip.Gpu}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -170,7 +124,7 @@
                                     <Path Style="{StaticResource TileIcon}" Data="{StaticResource IconGpu}"/>
                                     <StackPanel Grid.Column="1">
                                         <TextBlock Style="{StaticResource TileLabel}">
-                                            <Run Text="Carte graphique  ·  "/>
+                                            <Run Text="{loc:Tr Widget.Gpu}"/><Run Text="  ·  "/>
                                             <Run Text="{Binding Name, Mode=OneWay}"/>
                                         </TextBlock>
                                         <TextBlock Text="{Binding LoadText}" Style="{StaticResource TileValue}"/>
@@ -185,7 +139,7 @@
 
                 <!-- RAM -->
                 <Button Style="{StaticResource TileButton}" Click="Ram_Click"
-                        ToolTip="Ouvrir le Gestionnaire des tâches">
+                        ToolTip="{loc:Tr Tip.Ram}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -205,13 +159,13 @@
                 </Button>
 
                 <!-- Disques -->
-                <TextBlock Text="DISQUES" Style="{StaticResource SectionTitle}"/>
+                <TextBlock Text="{loc:Tr Widget.Disks}" Style="{StaticResource SectionTitle}"/>
 
                 <ItemsControl ItemsSource="{Binding Disks}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type vm:DiskViewModel}">
                             <Button Style="{StaticResource TileButton}" Click="Disk_Click"
-                                    ToolTip="Ouvrir dans l'Explorateur de fichiers">
+                                    ToolTip="{loc:Tr Tip.Disk}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -374,7 +328,7 @@
     <!-- Poignée de redimensionnement (largeur) : la disposition s'adapte toute seule
          (étroit = miniature, moyen = normal, large = bandeau). -->
     <Thumb x:Name="ResizeGrip" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,4,4"
-           Width="16" Height="16" Cursor="SizeWE" ToolTip="Glisser pour redimensionner"
+           Width="16" Height="16" Cursor="SizeWE" ToolTip="{loc:Tr Tip.Resize}"
            DragDelta="ResizeGrip_DragDelta" DragCompleted="ResizeGrip_DragCompleted">
         <Thumb.Template>
             <ControlTemplate TargetType="Thumb">

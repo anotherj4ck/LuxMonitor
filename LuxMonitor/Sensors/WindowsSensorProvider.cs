@@ -214,7 +214,7 @@ public sealed class WindowsSensorProvider : ISensorProvider
                 if (!drive.IsReady)
                     continue;
 
-                string label = string.IsNullOrWhiteSpace(drive.VolumeLabel) ? "Disque local" : drive.VolumeLabel;
+                string label = string.IsNullOrWhiteSpace(drive.VolumeLabel) ? Localization.Loc.T("Disk.LocalDisk") : drive.VolumeLabel;
                 disks.Add(new DiskSnapshot(
                     drive.RootDirectory.FullName,
                     label,

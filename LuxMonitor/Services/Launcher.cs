@@ -107,7 +107,7 @@ public static class Launcher
         catch (Win32Exception ex)
         {
             // Programme introuvable, ou demande d'élévation (UAC) refusée.
-            MessageBox.Show($"Impossible d'ouvrir {Path.GetFileName(fileName)}.\n\n{ex.Message}",
+            MessageBox.Show(Localization.Loc.F("Error.CannotOpen", Path.GetFileName(fileName), ex.Message),
                 "Lux Monitor", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }

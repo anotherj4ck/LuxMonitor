@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using LuxMonitor.Localization;
 using LuxMonitor.Models;
 using LuxMonitor.Sensors;
 using LuxMonitor.Services;
@@ -33,7 +34,6 @@ public sealed class MainViewModel : ObservableObject
     private double _ramPercent;
     private string _ramText = "—";
     private string _ramModulesText = string.Empty;
-    private bool _isThemePanelOpen;
     private string _fpsText = string.Empty;
     private string _fpsProcessName = string.Empty;
     private WidgetLayout _layout = WidgetLayout.Normal;
@@ -42,19 +42,23 @@ public sealed class MainViewModel : ObservableObject
     {
         _provider = provider;
         IsDemo = isDemo;
+
+        // Changement de langue : on réaffiche tout de suite la dernière mesure dans la nouvelle langue,
+        // sans attendre la prochaine lecture des capteurs.
+        Loc.Instance.LanguageChanged += () =>
+        {
+            if (_lastSnapshot is not null)
+                Apply(_lastSnapshot);
+        };
     }
+
+    private SystemSnapshot? _lastSnapshot;
 
     public bool IsDemo { get; }
 
     /// <summary>Pastilles du panneau des thèmes.</summary>
     public IReadOnlyList<ThemeOptionViewModel> ThemeOptions { get; } =
         ThemeManager.Themes.Select(theme => new ThemeOptionViewModel(theme)).ToList();
-
-    public bool IsThemePanelOpen
-    {
-        get => _isThemePanelOpen;
-        set => SetProperty(ref _isThemePanelOpen, value);
-    }
 
     /// <summary>Détail des barrettes : "16 Go Samsung · 8 Go SK hynix" (vide si inconnu).</summary>
     public string RamModulesText
@@ -212,6 +216,8 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Transforme une photo de la machine en valeurs affichables (fil de l'interface uniquement).</summary>
     private void Apply(SystemSnapshot snapshot)
     {
+        _lastSnapshot = snapshot;
+
         FpsText = snapshot.Fps is FpsInfo fps ? $"{fps.Value:0}" : string.Empty;
         FpsProcessName = snapshot.Fps?.ProcessName ?? string.Empty;
 
@@ -222,9 +228,9 @@ public sealed class MainViewModel : ObservableObject
         CpuTemperatureText = snapshot.CpuTemperatureC is double temp ? $"{temp:0} °C" : string.Empty;
 
         RamPercent = snapshot.RamPercent;
-        RamText = $"{snapshot.RamUsedGb:0.0} / {snapshot.RamTotalGb:0} Go";
+        RamText = Loc.F("Fmt.RamUsage", snapshot.RamUsedGb, snapshot.RamTotalGb);
         RamModulesText = string.Join("  ·  ", snapshot.RamModules.Select(m =>
-            string.IsNullOrEmpty(m.Manufacturer) ? $"{m.CapacityGb:0} Go" : $"{m.CapacityGb:0} Go {m.Manufacturer}"));
+            string.IsNullOrEmpty(m.Manufacturer) ? Loc.F("Fmt.RamModule", m.CapacityGb) : Loc.F("Fmt.RamModuleMaker", m.CapacityGb, m.Manufacturer)));
 
         Sync(Gpus, FilterIdleIntegratedGpus(snapshot.Gpus),
             snap => snap.Id, vm => vm.Id,

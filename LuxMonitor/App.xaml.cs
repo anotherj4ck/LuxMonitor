@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Windows;
+using LuxMonitor.Localization;
 using LuxMonitor.Services;
 
 namespace LuxMonitor;
@@ -22,6 +23,9 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Langue en tout premier : tous les textes (y compris les messages d'erreur) en dépendent.
+        Loc.Instance.Apply(Loc.FromCode(SettingsService.Load().Language));
 
         bool isAdminStartupChange = e.Args.Contains(AdminStartupService.EnableArgument)
                                     || e.Args.Contains(AdminStartupService.DisableArgument);
@@ -123,7 +127,7 @@ public partial class App : Application
             }
             else
             {
-                MessageBox.Show("Impossible de créer la tâche planifiée. Lux Monitor continue sans démarrage administrateur.",
+                MessageBox.Show(Loc.T("Error.TaskCreate"),
                     "Lux Monitor", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }

@@ -1,3 +1,4 @@
+using LuxMonitor.Localization;
 using LuxMonitor.Models;
 
 namespace LuxMonitor.ViewModels;
@@ -39,6 +40,6 @@ public sealed class DiskViewModel : ObservableObject
     {
         Label = snapshot.Label;
         UsedPercent = snapshot.UsedPercent;
-        Detail = $"{snapshot.FreeGb:0} Go libres sur {snapshot.TotalGb:0} Go";
+        Detail = Loc.F("Fmt.DiskFree", snapshot.FreeGb, snapshot.TotalGb);
     }
 }
