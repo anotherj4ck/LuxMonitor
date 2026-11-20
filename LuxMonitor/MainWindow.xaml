@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
         Title="Lux Monitor"
-        Width="320" SizeToContent="Height"
+        Width="260" SizeToContent="Height"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
         Icon="/Assets/LuxMonitor.ico"
@@ -116,7 +116,7 @@
 
             <StackPanel>
                 <!-- FPS : visible seulement quand une application affiche des images (et en mode admin) -->
-                <Border Margin="0,0,0,10" Padding="16,12" CornerRadius="18" BorderThickness="1"
+                <Border Margin="0,0,0,8" Padding="14,10" CornerRadius="18" BorderThickness="1"
                         Background="{DynamicResource TileBackgroundBrush}"
                         BorderBrush="{DynamicResource TileBorderBrush}"
                         Visibility="{Binding HasFps, Converter={StaticResource BoolToVisibility}}">
@@ -294,9 +294,48 @@
                 </ItemsControl>
             </StackPanel>
         </Border>
+
+        <!-- ===== Disposition BANDEAU : tout sur une ligne, cases de même largeur ===== -->
+        <Border Style="{StaticResource RevealPanel}"
+                Visibility="{Binding IsStrip, Converter={StaticResource BoolToVisibility}}">
+            <Border.RenderTransform>
+                <TranslateTransform/>
+            </Border.RenderTransform>
+
+            <ItemsControl ItemsSource="{Binding StripItems}" Margin="-3,0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <!-- Une seule ligne : chaque case reçoit la même part de la largeur -->
+                        <UniformGrid Rows="1"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:StripItemViewModel}">
+                        <Button Style="{StaticResource CompactTileButton}" Margin="3,0,3,6"
+                                Click="StripItem_Click" IsEnabled="{Binding IsClickable}"
+                                ToolTip="{Binding ToolTip}" ToolTipService.ShowOnDisabled="True">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Label}" Style="{StaticResource CompactLabel}"
+                                           TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Style="{StaticResource CompactValue}" HorizontalAlignment="Left"
+                                           Margin="0,2,0,0" TextTrimming="CharacterEllipsis">
+                                    <Run Text="{Binding Value, Mode=OneWay}"/>
+                                    <Run Text="{Binding Secondary, Mode=OneWay}"
+                                         Foreground="{DynamicResource MutedTextBrush}"/>
+                                </TextBlock>
+                                <ProgressBar Style="{StaticResource GaugeThin}" Value="{Binding Percent, Mode=OneWay}"
+                                             Visibility="{Binding HasGauge, Converter={StaticResource BoolToVisibility}}"/>
+                            </StackPanel>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
     </StackPanel>
 
-    <!-- Poignée de redimensionnement (largeur) : la disposition s'adapte toute seule. -->
+    <!-- Poignée de redimensionnement (largeur) : la disposition s'adapte toute seule
+         (étroit = miniature, moyen = normal, large = bandeau). -->
     <Thumb HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,4,4"
            Width="16" Height="16" Cursor="SizeWE" ToolTip="Glisser pour redimensionner"
            DragDelta="ResizeGrip_DragDelta" DragCompleted="ResizeGrip_DragCompleted">

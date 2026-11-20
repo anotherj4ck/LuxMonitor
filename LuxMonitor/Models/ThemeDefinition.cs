@@ -10,6 +10,11 @@ namespace LuxMonitor.Models;
 /// <param name="IsDark">Thème sombre : Windows teinte alors son effet en sombre.</param>
 /// <param name="PreviewBackground">Couleur de la pastille d'aperçu.</param>
 /// <param name="PreviewAccent">Couleur d'accent de la pastille d'aperçu.</param>
+/// <param name="AcrylicTint">
+/// Optionnel : teinte personnalisée du flou, au format 0xAABBGGRR (alpha, bleu, vert, rouge).
+/// Si elle est renseignée, on utilise le flou réglable (API non documentée) au lieu de l'Acrylic officiel,
+/// ce qui permet d'obtenir un verre plus translucide. Les deux premiers chiffres (AA) règlent l'opacité.
+/// </param>
 public sealed record ThemeDefinition(
     string Id,
     string DisplayName,
@@ -17,4 +22,5 @@ public sealed record ThemeDefinition(
     bool UseAcrylic,
     bool IsDark,
     string PreviewBackground,
-    string PreviewAccent);
+    string PreviewAccent,
+    uint? AcrylicTint = null);

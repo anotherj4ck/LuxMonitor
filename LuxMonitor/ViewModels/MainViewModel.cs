@@ -5,6 +5,19 @@ using LuxMonitor.Services;
 
 namespace LuxMonitor.ViewModels;
 
+/// <summary>Les trois dispositions du widget, choisies selon sa largeur.</summary>
+public enum WidgetLayout
+{
+    /// <summary>Étroit : une ligne par élément.</summary>
+    Compact,
+
+    /// <summary>Largeur moyenne : grandes tuiles détaillées.</summary>
+    Normal,
+
+    /// <summary>Large : tous les éléments côte à côte, en bandeau horizontal.</summary>
+    Strip,
+}
+
 /// <summary>
 /// Fait le lien entre les capteurs et la fenêtre.
 /// Il lit une photo de la machine et la transforme en valeurs prêtes à afficher.
@@ -23,7 +36,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _isThemePanelOpen;
     private string _fpsText = string.Empty;
     private string _fpsProcessName = string.Empty;
-    private bool _isCompact;
+    private WidgetLayout _layout = WidgetLayout.Normal;
 
     public MainViewModel(ISensorProvider provider, bool isDemo)
     {
@@ -76,19 +89,27 @@ public sealed class MainViewModel : ObservableObject
 
     public bool HasFps => FpsText.Length > 0;
 
-    /// <summary>Disposition miniature (widget étroit) : une ligne par élément.</summary>
-    public bool IsCompact
+    /// <summary>Disposition actuelle, choisie par la fenêtre selon sa largeur.</summary>
+    public WidgetLayout Layout
     {
-        get => _isCompact;
+        get => _layout;
         set
         {
-            if (SetProperty(ref _isCompact, value))
-                OnPropertyChanged(nameof(IsNormalLayout));
+            if (!SetProperty(ref _layout, value))
+                return;
+
+            OnPropertyChanged(nameof(IsCompact));
+            OnPropertyChanged(nameof(IsNormalLayout));
+            OnPropertyChanged(nameof(IsStrip));
         }
     }
 
-    /// <summary>Inverse de IsCompact, pour l'affichage (WPF n'a pas de convertisseur "inverse" intégré).</summary>
-    public bool IsNormalLayout => !IsCompact;
+    // Une propriété par disposition : le XAML s'en sert pour afficher la bonne.
+    public bool IsCompact => Layout == WidgetLayout.Compact;
+
+    public bool IsNormalLayout => Layout == WidgetLayout.Normal;
+
+    public bool IsStrip => Layout == WidgetLayout.Strip;
 
     /// <summary>Place la coche sur le thème actif.</summary>
     public void SetActiveTheme(string themeId)
@@ -100,6 +121,9 @@ public sealed class MainViewModel : ObservableObject
     public ObservableCollection<GpuViewModel> Gpus { get; } = [];
 
     public ObservableCollection<DiskViewModel> Disks { get; } = [];
+
+    /// <summary>Toutes les cases du bandeau, dans l'ordre d'affichage.</summary>
+    public ObservableCollection<StripItemViewModel> StripItems { get; } = [];
 
     /// <summary>Fabricant du processeur : sert à choisir quel outil ouvrir au clic.</summary>
     public CpuVendor CpuVendor { get; private set; }
@@ -211,6 +235,76 @@ public sealed class MainViewModel : ObservableObject
             snap => snap.RootPath, vm => vm.RootPath,
             snap => new DiskViewModel(snap.RootPath),
             (vm, snap) => vm.Update(snap));
+
+        UpdateStripItems();
+    }
+
+    // ---- Disposition bandeau ----
+
+    /// <summary>Contenu voulu pour une case du bandeau.</summary>
+    private sealed record StripEntry(
+        string Key, StripItemKind Kind, string Label, string Value, string Secondary,
+        double Percent, string ToolTip, GpuVendor GpuVendor = default, string RootPath = "");
+
+    /// <summary>
+    /// Reconstruit la liste du bandeau à partir des valeurs déjà calculées (FPS, CPU, GPU, RAM, disques).
+    /// Les cases existantes sont mises à jour et remises dans le bon ordre, jamais recréées :
+    /// pas de clignotement, et le survol de la souris est conservé.
+    /// </summary>
+    private void UpdateStripItems()
+    {
+        var entries = new List<StripEntry>();
+
+        if (HasFps)
+            entries.Add(new StripEntry("fps", StripItemKind.Fps, "FPS", FpsText, string.Empty, 0, FpsProcessName));
+
+        entries.Add(new StripEntry("cpu", StripItemKind.Cpu, "CPU", CpuText, CpuTemperatureText, CpuPercent, CpuName));
+
+        foreach (GpuViewModel gpu in Gpus)
+            entries.Add(new StripEntry($"gpu:{gpu.Id}", StripItemKind.Gpu, "GPU", gpu.LoadText, gpu.TemperatureText,
+                gpu.LoadPercent, gpu.Name, GpuVendor: gpu.Vendor));
+
+        entries.Add(new StripEntry("ram", StripItemKind.Ram, "RAM", $"{RamPercent:0} %", string.Empty, RamPercent, RamText));
+
+        foreach (DiskViewModel disk in Disks)
+            entries.Add(new StripEntry($"disk:{disk.RootPath}", StripItemKind.Disk, disk.Title, $"{disk.UsedPercent:0} %",
+                string.Empty, disk.UsedPercent, disk.Detail, RootPath: disk.RootPath));
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            StripEntry entry = entries[i];
+            int index = IndexOfStripItem(entry.Key);
+
+            StripItemViewModel item;
+            if (index < 0)
+            {
+                item = new StripItemViewModel(entry.Key, entry.Kind, entry.GpuVendor, entry.RootPath);
+                StripItems.Insert(i, item);
+            }
+            else
+            {
+                item = StripItems[index];
+                if (index != i)
+                    StripItems.Move(index, i);
+            }
+
+            item.Update(entry.Label, entry.Value, entry.Secondary, entry.Percent, entry.ToolTip);
+        }
+
+        // Ce qui reste après les cases voulues a disparu (FPS terminés, clé USB retirée...).
+        while (StripItems.Count > entries.Count)
+            StripItems.RemoveAt(StripItems.Count - 1);
+    }
+
+    private int IndexOfStripItem(string key)
+    {
+        for (int i = 0; i < StripItems.Count; i++)
+        {
+            if (StripItems[i].Key == key)
+                return i;
+        }
+
+        return -1;
     }
 
     // ---- GPU intégré : masqué quand il ne sert pas ----

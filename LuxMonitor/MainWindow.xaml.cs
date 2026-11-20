@@ -14,10 +14,12 @@ public partial class MainWindow : Window
 {
     private const double ScreenMargin = 24;
 
-    // Largeurs possibles du widget, et seuil de passage en miniature.
+    // Largeurs possibles du widget, et seuils de changement de disposition :
+    // étroit = miniature, moyen = normal, large = bandeau horizontal.
     private const double MinWidgetWidth = 150;
-    private const double MaxWidgetWidth = 480;
-    private const double CompactThreshold = 250;
+    private const double CompactThreshold = 230;
+    private const double StripThreshold = 560;
+    private const double MaxWidgetWidth = 1800;
 
     private readonly ISensorProvider _provider;
     private readonly MainViewModel _viewModel;
@@ -286,12 +288,18 @@ public partial class MainWindow : Window
 
     /// <summary>
     /// Applique une largeur (bornée) et choisit la disposition qui va avec.
-    /// La hauteur, elle, suit le contenu (SizeToContent="Height").
+    /// La hauteur, elle, suit le contenu (SizeToContent="Height") : en bandeau,
+    /// le widget devient donc tout naturellement un rectangle horizontal.
     /// </summary>
     private void ApplyWidth(double width)
     {
-        Width = Math.Clamp(width, MinWidgetWidth, MaxWidgetWidth);
-        _viewModel.IsCompact = Width < CompactThreshold;
+        // Jamais plus large que l'ensemble des écrans.
+        double maxWidth = Math.Max(MinWidgetWidth, Math.Min(MaxWidgetWidth, SystemParameters.VirtualScreenWidth));
+        Width = Math.Clamp(width, MinWidgetWidth, maxWidth);
+
+        _viewModel.Layout = Width < CompactThreshold ? WidgetLayout.Compact
+            : Width >= StripThreshold ? WidgetLayout.Strip
+            : WidgetLayout.Normal;
     }
 
     // On gère le redimensionnement nous-mêmes (poignée en bas à droite) plutôt que de laisser
@@ -369,5 +377,28 @@ public partial class MainWindow : Window
     {
         if (sender is FrameworkElement { DataContext: DiskViewModel disk })
             Launcher.OpenFolder(disk.RootPath);
+    }
+
+    // Bandeau : une seule fonction pour toutes les cases, selon leur type.
+    private void StripItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { DataContext: StripItemViewModel item })
+            return;
+
+        switch (item.Kind)
+        {
+            case StripItemKind.Cpu:
+                Launcher.OpenCpuTool(_viewModel.CpuVendor);
+                break;
+            case StripItemKind.Gpu:
+                Launcher.OpenGpuTool(item.GpuVendor);
+                break;
+            case StripItemKind.Ram:
+                Launcher.OpenTaskManager();
+                break;
+            case StripItemKind.Disk:
+                Launcher.OpenFolder(item.RootPath);
+                break;
+        }
     }
 }
