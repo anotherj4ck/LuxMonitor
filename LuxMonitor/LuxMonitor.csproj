@@ -23,7 +23,7 @@
     <Description>Widget de supervision Windows, libre et gratuit.</Description>
     <Authors>anotherj4ck</Authors>
     <Copyright>© 2026 anotherj4ck</Copyright>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
   </PropertyGroup>
 
   <!-- Version publiée (Release) : un seul exe autonome, qui tourne sans installer .NET.
